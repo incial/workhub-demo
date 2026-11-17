@@ -29,7 +29,7 @@ test.beforeEach(() => {
   globalThis.localStorage = { getItem: key => values.get(key) ?? null, setItem: (key, value) => values.set(key, String(value)), removeItem: key => values.delete(key) };
 });
 test.after(() => { delete globalThis.localStorage; });
-const demo = () => values.set('workhub-demo.session.v1', JSON.stringify({ version: 1, actorId: 9001, email: 'incial@demo.in' }));
+const demo = () => values.set('workhub-demo.session.v2', JSON.stringify({ version: 2, actorId: 9001, email: 'incial@demo.in' }));
 
 test('demo opens the actual admin workspace with the existing view selector', () => {
   demo();

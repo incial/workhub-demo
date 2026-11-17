@@ -7,6 +7,7 @@ import { useOperatorView } from '../../context/OperatorViewContext';
 import { ImageConfig } from '../../constants/images';
 import { safeDemoImage } from '../../demo/network';
 import { scopedUiKey } from '../../demo/session';
+import { formatRoleLabel } from '../../utils/roleLabel';
 
 const NavItem = ({ icon: Icon, label, to, active, collapsed }: { icon: any, label: string, to: string, active: boolean, collapsed: boolean }) => (
   <Link
@@ -102,7 +103,7 @@ export const Sidebar: React.FC = () => {
         if (isAccounts) navItemCount++;      // Accounts
         if (isInstallation) navItemCount++;  // Installation
         if (canUseFeedbackWorkspace) navItemCount++; // Feedback workspace
-        if (isProduction) navItemCount++;    // Production
+        if (isProduction) navItemCount++;    // Procurement
         if (isAdmin && !isExecutive && !isSales && !isAccounts && !isInstallation) {
             // Pure admin (not combined with other roles) gets Completed
             navItemCount += 2; // Completed + Audit Logs
@@ -191,7 +192,7 @@ export const Sidebar: React.FC = () => {
                         {isSales && <NavItem collapsed={isSidebarCollapsed} icon={DollarSign} label="Billing" to="/sales" active={currentPath.startsWith('/sales')} />}
                         {isAccounts && <NavItem collapsed={isSidebarCollapsed} icon={CreditCard} label="Accounts" to="/accounts" active={currentPath.startsWith('/accounts')} />}
                         {isInstallation && <NavItem collapsed={isSidebarCollapsed} icon={Wrench} label="Installation" to="/installation" active={currentPath.startsWith('/installation')} />}
-                        {isProduction && <NavItem collapsed={isSidebarCollapsed} icon={Factory} label="Production" to="/production" active={currentPath.startsWith('/production')} />}
+                        {isProduction && <NavItem collapsed={isSidebarCollapsed} icon={Factory} label="Procurement" to="/procurement" active={currentPath.startsWith('/procurement')} />}
                         {(isAdmin || isSuperAdmin) && <NavItem collapsed={isSidebarCollapsed} icon={Archive} label="Data Bank" to="/completed" active={currentPath.startsWith('/completed')} />}
 
                         {canUseFeedbackWorkspace && (
@@ -223,7 +224,7 @@ export const Sidebar: React.FC = () => {
                         {!isSidebarCollapsed && (
                             <div className="flex flex-col min-w-0 flex-1">
                                 <span className="text-white text-sm lg:text-[15px] font-bold truncate leading-none mb-1 lg:mb-1.5">{displayName}</span>
-                                <span className="text-[9px] lg:text-[10px] text-indigo-400 uppercase font-black tracking-widest leading-none">{role?.replace('ROLE_', '')}</span>
+                                <span className="text-[9px] lg:text-[10px] text-indigo-400 uppercase font-black tracking-widest leading-none">{formatRoleLabel(role)}</span>
                             </div>
                         )}
                     </div>

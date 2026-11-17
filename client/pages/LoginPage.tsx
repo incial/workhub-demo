@@ -2,13 +2,18 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { authApi } from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { DEMO_EMAIL, DEMO_PASSWORD, hasDemoMarker } from '../demo/session';
+import { DEMO_ACCOUNTS, DEMO_EMAIL, DEMO_PASSWORD, hasDemoMarker } from '../demo/session';
 import { ImageConfig } from '../constants/images';
-import { Loader2, AlertCircle, Eye, EyeOff, Sparkles, HardDrive, Target, Briefcase, Wallet, Wrench, MessageSquareHeart, ArrowRight } from 'lucide-react';
+import { Loader2, AlertCircle, Eye, EyeOff, Sparkles, HardDrive, Target, Briefcase, Wallet, Wrench, MessageSquareHeart, ShieldCheck, LayoutDashboard, Factory, KeyRound, type LucideIcon } from 'lucide-react';
+
+const ACCOUNT_ICONS: Record<string, LucideIcon> = {
+    ROLE_DEMO: Sparkles, ROLE_SUPER_ADMIN: ShieldCheck, ROLE_ADMIN: LayoutDashboard, ROLE_EXECUTIVE: Target,
+    ROLE_SALES_COORDINATOR: Briefcase, ROLE_ACCOUNTS: Wallet, ROLE_PRODUCTION: Factory,
+};
 
 const WORKFLOW = [
     { icon: Target, title: 'Leads & visits', text: 'Executives capture schools, schedule visits and record outcomes.' },
-    { icon: Briefcase, title: 'Sales', text: 'Coordinators prepare quotations, invoices and delivery dates.' },
+    { icon: Briefcase, title: 'Billing', text: 'Coordinators prepare quotations, invoices and delivery dates.' },
     { icon: Wallet, title: 'Accounts', text: 'Payments are recorded against invoices with full history.' },
     { icon: Wrench, title: 'Installation', text: 'Installation teams track task lists through to completion.' },
     { icon: MessageSquareHeart, title: 'Feedback', text: 'Completed projects flow into the feedback queue and reports.' },
@@ -20,6 +25,7 @@ export const LoginPage: React.FC = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [pendingEmail, setPendingEmail] = useState<string | null>(null);
     const { login, logout } = useAuth();
 
     useEffect(() => {
@@ -29,6 +35,7 @@ export const LoginPage: React.FC = () => {
 
     const signIn = async (loginEmail: string, loginPassword: string) => {
         setIsLoading(true);
+        setPendingEmail(loginEmail);
         setError('');
         try {
             const response = await authApi.login(loginEmail, loginPassword);
@@ -36,6 +43,7 @@ export const LoginPage: React.FC = () => {
         } catch (err: any) {
             setError(err?.message || 'Authentication failed');
             setIsLoading(false);
+            setPendingEmail(null);
         }
     };
 
@@ -44,10 +52,10 @@ export const LoginPage: React.FC = () => {
         void signIn(email, password);
     };
 
-    const useDemoAccount = () => {
-        setEmail(DEMO_EMAIL);
+    const useDemoAccount = (accountEmail: string) => {
+        setEmail(accountEmail);
         setPassword(DEMO_PASSWORD);
-        void signIn(DEMO_EMAIL, DEMO_PASSWORD);
+        void signIn(accountEmail, DEMO_PASSWORD);
     };
 
     return (
@@ -101,22 +109,35 @@ export const LoginPage: React.FC = () => {
                         <p className="text-gray-400 mt-2 text-sm">Sign in to explore the WorkHub demo workspace</p>
                     </div>
 
-                    <div className="mb-6 rounded-2xl border border-brand-500/30 bg-brand-500/10 p-4">
-                        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-brand-300">
-                            <Sparkles className="h-4 w-4" /> Demo account
+                    <div className="mb-6">
+                        <div className="flex items-center justify-between gap-3 mb-3">
+                            <p className="text-xs font-bold uppercase tracking-[0.14em] text-brand-300">Sign in as a role</p>
+                            <p className="flex items-center gap-1.5 text-xs text-gray-400"><KeyRound className="h-3.5 w-3.5" /> Password <span className="font-mono text-white">{DEMO_PASSWORD}</span></p>
                         </div>
-                        <dl className="mt-3 grid grid-cols-[auto,1fr] gap-x-4 gap-y-1 text-sm">
-                            <dt className="text-gray-400">Email</dt><dd className="font-mono text-white">{DEMO_EMAIL}</dd>
-                            <dt className="text-gray-400">Password</dt><dd className="font-mono text-white">{DEMO_PASSWORD}</dd>
-                        </dl>
-                        <button
-                            type="button"
-                            onClick={useDemoAccount}
-                            disabled={isLoading}
-                            className="mt-4 w-full h-11 bg-white text-[#16162a] font-bold text-sm rounded-[10px] transition-all flex items-center justify-center gap-2 hover:bg-gray-100 disabled:opacity-70 active:scale-[0.98]"
-                        >
-                            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Enter demo workspace <ArrowRight className="h-4 w-4" /></>}
-                        </button>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            {DEMO_ACCOUNTS.map(account => {
+                                const Icon = ACCOUNT_ICONS[account.role] ?? Sparkles;
+                                const busy = isLoading && pendingEmail === account.email;
+                                return (
+                                    <button
+                                        key={account.email}
+                                        type="button"
+                                        onClick={() => useDemoAccount(account.email)}
+                                        disabled={isLoading}
+                                        title={account.description}
+                                        className={`group flex items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition-all disabled:opacity-60 ${account.role === 'ROLE_DEMO' ? 'sm:col-span-2 border-brand-500/40 bg-brand-500/15 hover:bg-brand-500/25' : 'border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20'}`}
+                                    >
+                                        <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-white/10 text-brand-200">
+                                            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Icon className="h-4 w-4" />}
+                                        </span>
+                                        <span className="min-w-0">
+                                            <span className="block text-sm font-bold text-white">{account.label}</span>
+                                            <span className="block truncate font-mono text-[11px] text-gray-400">{account.email}</span>
+                                        </span>
+                                    </button>
+                                );
+                            })}
+                        </div>
                     </div>
 
                     <div className="relative py-2 mb-4">

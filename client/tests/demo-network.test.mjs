@@ -11,7 +11,7 @@ async function browser(marker = null, storageThrows = false) {
   assert.ok(existsSync(source), 'The demo needs a browser isolation boundary before application startup');
   bundled ??= (await build({ entryPoints: [source], bundle: true, platform: 'browser', format: 'cjs', write: false })).outputFiles[0].text;
   const requests = [], policies = [], listeners = new Map(), values = new Map();
-  if (marker !== null) values.set('workhub-demo.session.v1', marker);
+  if (marker !== null) values.set('workhub-demo.session.v2', marker);
   const record = name => (...args) => { requests.push({ name, args }); return Promise.resolve('sent'); };
   class Form { submit() { requests.push({ name: 'form' }); } requestSubmit() { requests.push({ name: 'form-request' }); } }
   const document = {
@@ -44,7 +44,7 @@ test('the boundary is always active and installs before sign-in', async () => {
 });
 
 test('valid, malformed, and empty demo markers all deny every network transport', async () => {
-  for (const marker of ['{"version":1,"actorId":9001,"email":"incial@demo.in"}', 'broken', '']) {
+  for (const marker of ['{"version":2,"actorId":9001,"email":"incial@demo.in"}', 'broken', '']) {
     const context = await browser(marker);
     assert.equal(context.isDemoBoundaryActive(), true);
     context.installDemoBoundary();

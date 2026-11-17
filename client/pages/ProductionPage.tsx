@@ -62,7 +62,7 @@ export const ProductionPage: React.FC = () => {
             );
             setYearlyTrend(trend || []);
         } catch (error: any) {
-            showToast(error.message || 'Failed to load production data', 'error');
+            showToast(error.message || 'Failed to load procurement data', 'error');
         } finally {
             setLoading(false);
         }
@@ -102,9 +102,9 @@ export const ProductionPage: React.FC = () => {
                     return acc;
                 }, {})
             );
-            showToast('Production quantities saved successfully', 'success');
+            showToast('Procurement quantities saved successfully', 'success');
         } catch (error: any) {
-            showToast(error.message || 'Failed to save production data', 'error');
+            showToast(error.message || 'Failed to save procurement data', 'error');
         } finally {
             setSaving(false);
         }
@@ -184,9 +184,9 @@ export const ProductionPage: React.FC = () => {
                 <div className="px-4 lg:px-12 py-6 lg:py-10 pb-32 space-y-6">
                     <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
                         <div>
-                            <h1 className="text-3xl lg:text-4xl font-black text-gray-900 display-text mb-2">Production Section</h1>
+                            <h1 className="text-3xl lg:text-4xl font-black text-gray-900 display-text mb-2">Procurement Section</h1>
                             <p className="text-gray-600 text-sm lg:text-base font-medium">
-                                Track monthly production with quantity controls, summaries, and trend visibility.
+                                Track monthly procurement with quantity controls, summaries, and trend visibility.
                             </p>
                         </div>
                         <div className="flex flex-wrap items-center gap-2">
@@ -291,7 +291,7 @@ export const ProductionPage: React.FC = () => {
                     )}
 
                     <div className="glass-panel rounded-2xl p-5 lg:p-6 shadow-lg">
-                        <h2 className="text-lg font-bold text-gray-900 mb-4">Monthly Production Tracker</h2>
+                        <h2 className="text-lg font-bold text-gray-900 mb-4">Monthly Procurement Tracker</h2>
                         {loading ? (
                             <div className="text-gray-600">Loading...</div>
                         ) : (
@@ -347,7 +347,7 @@ export const ProductionPage: React.FC = () => {
                                                     colSpan={hasProductionRole ? 4 : 3}
                                                     className="px-3 py-10 text-center text-sm font-medium text-gray-500"
                                                 >
-                                                    {viewMode ? 'No active production items for this month yet.' : 'No production entries found.'}
+                                                    {viewMode ? 'No active procurement items for this month yet.' : 'No procurement entries found.'}
                                                 </td>
                                             </tr>
                                         )}
@@ -359,7 +359,7 @@ export const ProductionPage: React.FC = () => {
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <div className="glass-panel rounded-2xl p-5 lg:p-6 shadow-lg">
-                            <h2 className="text-lg font-bold text-gray-900 mb-4">Production Summary</h2>
+                            <h2 className="text-lg font-bold text-gray-900 mb-4">Procurement Summary</h2>
                             <div className="space-y-2 text-sm">
                                 <div className="font-semibold">Total Quantity: {totalQuantity}</div>
                                 {categoryBreakdown.map(([category, qty]) => (

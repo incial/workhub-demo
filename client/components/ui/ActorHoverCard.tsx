@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { CalendarClock, Mail, MapPin, Shield } from 'lucide-react';
 import { AuditLogRow } from '../../types';
 import { safeDemoImage } from '../../demo/network';
+import { formatRoleLabel } from '../../utils/roleLabel';
 
 const ACTOR_CARD_Z_INDEX = 1200;
 
@@ -17,7 +18,7 @@ interface ActorHoverCardProps {
   hoveredActorCard: HoveredActorCardState | null;
 }
 
-const formatRole = (role?: string) => role ? role.replace(/^ROLE_/, '').replace(/_/g, ' ') : 'N/A';
+const formatRole = (role?: string) => role ? formatRoleLabel(role) : 'N/A';
 const formatZone = (zone?: string) => zone ? zone.replace(/_/g, ' ') : 'N/A';
 const formatCreatedAt = (value?: string) => {
   if (!value) return 'Not recorded';

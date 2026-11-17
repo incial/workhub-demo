@@ -14,6 +14,7 @@ import { AuditLogRow, ProductionEntry, ProjectTrackingReportRow, SchoolVisit, Tr
 import { Tabs } from '../components/ui/Tabs';
 import { CalendarDays, ChevronLeft, ChevronRight, Download, Factory, FileText, RefreshCw, Search, SlidersHorizontal, X } from 'lucide-react';
 import { ActorHoverCard, HoveredActorCardState } from '../components/ui/ActorHoverCard';
+import { formatRoleLabel as sharedRoleLabel } from '../utils/roleLabel';
 
 type ProductionRow = {
     month: number;
@@ -310,7 +311,7 @@ const toIsoDayBoundary = (day: string, end = false) => `${day}T${end ? '23:59:59
 
 const formatRoleLabel = (role?: string) => {
     if (!role) return 'N/A';
-    return role.replace(/^ROLE_/, '').replace(/_/g, ' ');
+    return sharedRoleLabel(role);
 };
 const formatZoneLabel = (zone?: string) => {
     if (!zone) return 'N/A';
@@ -1551,7 +1552,7 @@ export const ProjectTrackingPage: React.FC = () => {
                                 {activeTab === 'USER_TRACKING'
                                     ? 'Admin user-level tracking with role-based activity and project visibility.'
                                     : activeTab === 'PRODUCTION_TRACKING'
-                                        ? 'Production updates with product-level quantity and updater visibility.'
+                                        ? 'Procurement updates with product-level quantity and updater visibility.'
                                         : 'Executive view for projects and invoices with date-range based downloads.'}
                             </p>
                         </div>
@@ -1598,7 +1599,7 @@ export const ProjectTrackingPage: React.FC = () => {
                             tabs={[
                                 { id: 'PROJECT_TRACKING', label: 'Project Tracking' },
                                 { id: 'USER_TRACKING', label: 'User Tracking' },
-                                { id: 'PRODUCTION_TRACKING', label: 'Production Tracking' }
+                                { id: 'PRODUCTION_TRACKING', label: 'Procurement Tracking' }
                             ]}
                             activeTab={activeTab}
                             onChange={(tabId) => setActiveTab(tabId as TrackingTab)}
@@ -1816,8 +1817,8 @@ export const ProjectTrackingPage: React.FC = () => {
                     {activeTab === 'PRODUCTION_TRACKING' && (
                     <TrackingSection
                         icon={<Factory className="text-brand-600" size={18} />}
-                        title="Production Tracking"
-                        description={`Production updates from ${fromDate} to ${toDate}, with product-level updater traceability.`}
+                        title="Procurement Tracking"
+                        description={`Procurement updates from ${fromDate} to ${toDate}, with product-level updater traceability.`}
                         onExport={() => downloadCsv(
                             `production-${dateRangeFileSuffix}.csv`,
                             ['S.No', 'Month', 'Category', 'Product Name', 'Recorded Quantity', 'Last Updated By (User)', 'Last Updated Time'],

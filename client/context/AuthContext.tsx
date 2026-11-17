@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { User } from '../types';
-import { DEMO_TOKEN, DEMO_SESSION_KEY, restoreDemoSession, startDemoSession, endDemoSession, reloadAtLoginRoute } from '../demo/session';
+import { DEMO_TOKEN, DEMO_SESSION_KEY, demoAccountById, restoreDemoSession, startDemoSession, endDemoSession, reloadAtLoginRoute } from '../demo/session';
 
 interface AuthContextType {
   user: User | null;
@@ -15,21 +15,23 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 /**
- * Frontend-only showcase: the only identity is the local demo session stored
- * in this browser. There is no server token, refresh or remote account.
+ * Frontend-only showcase: identities are the local demo accounts (one per
+ * role) stored in this browser. There is no server token or remote account.
  */
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [token, setToken] = useState<string | null>(() => restoreDemoSession()?.token ?? null);
   const [user, setUser] = useState<User | null>(() => restoreDemoSession()?.user ?? null);
 
   const login = useCallback((newToken: string, newUser: User) => {
-    if (newToken !== DEMO_TOKEN || newUser.role !== 'ROLE_DEMO') {
-      throw new Error('Only the local demo account is available in this build.');
+    const account = demoAccountById(newUser.id);
+    if (newToken !== DEMO_TOKEN || !account || account.email !== newUser.email || account.role !== newUser.role) {
+      throw new Error('Only the local demo accounts are available in this build.');
     }
-    startDemoSession();
+    startDemoSession(account.id);
     setToken(null);
     setUser(null);
-    reloadAtLoginRoute('/dashboard');
+    // The root route sends each role to its own workspace.
+    reloadAtLoginRoute(account.role === 'ROLE_DEMO' ? '/dashboard' : '/');
   }, []);
 
   const updateUser = useCallback((updates: Partial<User>) => {

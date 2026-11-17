@@ -10,6 +10,7 @@ import { usersApi } from '../../services/api';
 import { User as AppUser } from '../../types';
 import { formatZoneLabel } from '../../utils';
 import { safeDemoImage } from '../../demo/network';
+import { formatRoleLabel } from '../../utils/roleLabel';
 
 export const Navbar: React.FC = () => {
   const { user, logout, isDemo } = useAuth();
@@ -102,7 +103,7 @@ export const Navbar: React.FC = () => {
     return Number.isSafeInteger(value) && value > 0 ? value : undefined;
   })();
   const selectedExecutive = executives.find((executive) => executive.id === selectedExecutiveId);
-  const adminZoneLockedPaths = ['/projects', '/sales', '/accounts', '/installation', '/production'];
+  const adminZoneLockedPaths = ['/projects', '/sales', '/accounts', '/installation', '/procurement'];
   const isZoneSwitchLockedForAdmin = isAdmin && !isExecutiveWorkspaceAdmin && adminZoneLockedPaths.includes(location.pathname);
 
   useEffect(() => {
@@ -365,7 +366,7 @@ export const Navbar: React.FC = () => {
             </div>
             <div className="text-left hidden 2xl:block">
               <p className="text-sm font-black text-slate-900 leading-none">{user?.name?.split(' ')[0]}</p>
-                  <p className="text-[9px] font-bold text-slate-400 mt-1.5 uppercase tracking-[0.2em] leading-none">{isDemo ? 'DEMO' : (effectiveRole || user?.role || '').replace('ROLE_', '')}</p>
+                  <p className="text-[9px] font-bold text-slate-400 mt-1.5 uppercase tracking-[0.2em] leading-none">{isDemo ? 'DEMO' : formatRoleLabel(effectiveRole || user?.role)}</p>
             </div>
             <ChevronDown className={`hidden 2xl:block h-4 w-4 text-slate-300 transition-transform duration-200 ${isProfileOpen ? 'rotate-180' : 'group-hover:text-slate-600'}`} />
           </button>
@@ -387,7 +388,7 @@ export const Navbar: React.FC = () => {
               </div>
 
               <div className="space-y-1 p-1">
-                {isDemo && <div className="rounded-2xl bg-amber-50 px-5 py-3 text-xs text-amber-900" role="status">
+                {<div className="rounded-2xl bg-amber-50 px-5 py-3 text-xs text-amber-900" role="status">
                   <p className="font-bold">Demo · All records are fictional</p>
                   <button className="mt-2 font-semibold underline" onClick={async () => {
                     const { resetDemoState } = await import('../../demo/store');

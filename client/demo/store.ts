@@ -1,7 +1,7 @@
 import type { AuditLogRow, ProductionEntry, ProductionProduct, Project, SchoolVisit, User, UserActivityLog } from '../types';
 import { createDemoSeed } from './seed';
 
-export const DEMO_DATA_KEY = 'workhub-demo.data.v1';
+export const DEMO_DATA_KEY = 'workhub-demo.data.v3';
 export interface DemoState {
   version: 1;
   provenance: 'workhub-demo-fictional-v1';
@@ -17,7 +17,7 @@ export interface DemoState {
 
 const roles = new Set(['ROLE_DEMO', 'ROLE_SUPER_ADMIN', 'ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_EXECUTIVE', 'ROLE_SALES_COORDINATOR', 'ROLE_ACCOUNTS', 'ROLE_INSTALLATION', 'ROLE_PRODUCTION', 'ROLE_ZONAL_MANAGER', 'ROLE_FEEDBACK', 'ROLE_EMPLOYEE', 'ROLE_CLIENT']);
 const stages = new Set(['LEAD', 'ON_PROGRESS', 'QUOTATION_SENT', 'IN_REVIEW', 'ONBOARDED', 'SALES', 'ACCOUNTS', 'INSTALLATION', 'COMPLETED', 'DROPPED']);
-export const fictionalEmail = (value: unknown): value is string => typeof value === 'string' && (value === 'incial@demo.in' || /^[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-z0-9.-]+\.example$/i.test(value));
+export const fictionalEmail = (value: unknown): value is string => typeof value === 'string' && (/^[a-z0-9._-]+@demo\.in$/i.test(value) || /^[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-z0-9.-]+\.example$/i.test(value));
 
 function isSafeTree(value: unknown, key = ''): boolean {
   if (/password|token|googleId|credential|otp/i.test(key)) return false;

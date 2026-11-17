@@ -8,13 +8,14 @@ import { usersApi } from '../services/api';
 import { User, UserRole, Zone } from '../types';
 import { ActorHoverCard, HoveredActorCardState } from '../components/ui/ActorHoverCard';
 import { safeDemoImage } from '../demo/network';
+import { formatRoleLabel } from '../utils/roleLabel';
 
 const CREATE_ROLE_OPTIONS: Array<{ value: UserRole; label: string }> = [
   { value: 'ROLE_EXECUTIVE', label: 'Executive' },
   { value: 'ROLE_ACCOUNTS', label: 'Accounts' },
   { value: 'ROLE_FEEDBACK', label: 'Feedback' },
   { value: 'ROLE_INSTALLATION', label: 'Installation' },
-  { value: 'ROLE_PRODUCTION', label: 'Production' },
+  { value: 'ROLE_PRODUCTION', label: 'Procurement' },
   { value: 'ROLE_SALES_COORDINATOR', label: 'Sales Coordinator' }
 ];
 
@@ -399,7 +400,7 @@ export const OperatorPage: React.FC = () => {
                       <div className="min-w-0">
                         <p className="truncate text-sm font-bold text-slate-900">{user.name}</p>
                         <p className="text-xs text-slate-500">
-                          {(user.role || '').replace('ROLE_', '').replace(/_/g, ' ')}{user.role === 'ROLE_EXECUTIVE' && user.zone ? ` - ${formatZoneLabel(user.zone)}` : ''}
+                          {formatRoleLabel(user.role)}{user.role === 'ROLE_EXECUTIVE' && user.zone ? ` - ${formatZoneLabel(user.zone)}` : ''}
                         </p>
                       </div>
                     </div>

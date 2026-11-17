@@ -56,22 +56,22 @@ test('Google sign-in and public registration are unavailable and never reach a t
 test('the actual directory service reads fictional demo users without private API transport', async () => {
   values.set('token', 'stale-real-token');
   values.set('user', JSON.stringify({ id: 8, email: 'private@real.test', name: 'Private cached person', role: 'ROLE_ADMIN' }));
-  values.set('workhub-demo.session.v1', JSON.stringify({ version: 1, actorId: 9001, email: 'incial@demo.in' }));
+  values.set('workhub-demo.session.v2', JSON.stringify({ version: 2, actorId: 9001, email: 'incial@demo.in' }));
   const users = await usersApi.getAll();
   assert.ok(users.length > 0);
   assert.equal(users.some(user => user.email === 'private@real.test'), false);
-  assert.equal(users.every(user => user.email === 'incial@demo.in' || user.email.endsWith('.example')), true);
+  assert.equal(users.every(user => user.email.endsWith('@demo.in') || user.email.endsWith('.example')), true);
   assert.equal(requests.length, 0);
 });
 
 test('a corrupt marker rejects locally without private API transport', async () => {
-  values.set('workhub-demo.session.v1', 'broken');
+  values.set('workhub-demo.session.v2', 'broken');
   await assert.rejects(usersApi.getAll(), /demo/i);
   assert.equal(requests.length, 0);
 });
 
 test('a damaged session marker expires the local session', async () => {
-  values.set('workhub-demo.session.v1', 'broken');
+  values.set('workhub-demo.session.v2', 'broken');
   await assert.rejects(usersApi.getAll(), /session/i);
   assert.deepEqual(events, ['auth:unauthorized']);
   assert.equal(requests.length, 0);
@@ -79,7 +79,7 @@ test('a damaged session marker expires the local session', async () => {
 
 test('stale real tokens are ignored and never sent anywhere', async () => {
   values.set('token', 'stale-real-token');
-  values.set('workhub-demo.session.v1', JSON.stringify({ version: 1, actorId: 9001, email: 'incial@demo.in' }));
+  values.set('workhub-demo.session.v2', JSON.stringify({ version: 2, actorId: 9001, email: 'incial@demo.in' }));
   const me = await authApi.getCurrentUser();
   assert.equal(me.email, 'incial@demo.in');
   assert.equal(requests.length, 0);
@@ -92,5 +92,15 @@ test('the signed-out password reset flow is simulated locally with the demo code
   const changed = await authApi.changePassword({ email: 'anyone@school.example', newPassword: 'newpassword', otp: '123456' });
   assert.equal(changed.success, true);
   assert.deepEqual(events, []);
+  assert.equal(requests.length, 0);
+});
+
+test('every role account signs in with the shared demo password', async () => {
+  for (const email of ['superadmin@demo.in', 'admin@demo.in', 'executive@demo.in', 'billing@demo.in', 'accounts@demo.in', 'procurement@demo.in']) {
+    const result = await authApi.login(email.toUpperCase(), 'incial');
+    assert.equal(result.user.email, email);
+    await assert.rejects(authApi.login(email, 'wrong'), /demo credentials/i);
+  }
+  for (const removed of ['installation@demo.in', 'feedback@demo.in']) await assert.rejects(authApi.login(removed, 'incial'), /demo credentials/i);
   assert.equal(requests.length, 0);
 });

@@ -172,7 +172,7 @@ const AuditLogsRoute: React.FC<{ children: React.ReactElement }> = ({ children }
     return <Navigate to="/unauthorized" replace />;
 };
 
-// Production Route - Production team + Admin + Operator
+// Procurement Route (ROLE_PRODUCTION) - Procurement team + Admin + Operator
 const ProductionRoute: React.FC<{ children: React.ReactElement }> = ({ children }) => {
     const { isAuthenticated, user } = useAuth();
     const { effectiveRole } = useOperatorView();
@@ -249,7 +249,7 @@ const RootRedirect: React.FC = () => {
             return <Navigate to="/feedback" replace />;
 
         case 'ROLE_PRODUCTION':
-            return <Navigate to="/production" replace />;
+            return <Navigate to="/procurement" replace />;
 
         case 'ROLE_ZONAL_MANAGER':
             return <Navigate to="/profile" replace />;
@@ -347,7 +347,8 @@ const AppRoutes = () => {
                 </OperationalRoute>
             } />
 
-            <Route path="/production" element={
+            <Route path="/production" element={<Navigate to="/procurement" replace />} />
+            <Route path="/procurement" element={
                 <ProductionRoute>
                     <ProductionPage />
                 </ProductionRoute>

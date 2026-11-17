@@ -21,7 +21,7 @@ const request = async (url, method = 'get', data, extra = {}) => {
 };
 const get = async url => (await request(url)).data.data;
 const mutate = async (url, data, method = 'post') => (await request(url, method, data)).data.data;
-test.beforeEach(() => { values.clear(); values.set('workhub-demo.session.v1', JSON.stringify({ version: 1, actorId: 9001, email: 'incial@demo.in' })); });
+test.beforeEach(() => { values.clear(); values.set('workhub-demo.session.v2', JSON.stringify({ version: 2, actorId: 9001, email: 'incial@demo.in' })); });
 
 test('fictional data fills every workflow stage and never reads real cached records', async () => {
   values.set('projects', JSON.stringify([{ id: 1, school: 'PRIVATE REAL SCHOOL' }]));
@@ -32,7 +32,7 @@ test('fictional data fills every workflow stage and never reads real cached reco
   const users = (await request('/users/all')).data;
   assert.equal(users.find(u => u.id === 9001).role, 'ROLE_DEMO');
   assert.ok(users.some(u => u.role === 'ROLE_EXECUTIVE' && u.zone === 'ZONE_3'));
-  assert.ok(users.every(u => u.email === 'incial@demo.in' || u.email.endsWith('.example')));
+  assert.ok(users.every(u => u.email.endsWith('@demo.in') || u.email.endsWith('.example')));
 });
 
 test('mutations drive dashboard counts, paginated reports, visits and feedback', async () => {
@@ -57,7 +57,7 @@ test('mutations drive dashboard counts, paginated reports, visits and feedback',
   assert.equal(report.content[0].pendingAmount, 0);
   assert.equal(report.content[0].stage, 'COMPLETED');
   assert.ok((await get('/projects/completed/archive/export?zone=ZONE_2')).some(p => p.id === created.id));
-  const visit = await mutate(`/projects/${created.id}/visits`, { scheduledFor: '2026-10-30', executiveRemark: 'Demo visit', assignedTo: 'executive1@staff.example' });
+  const visit = await mutate(`/projects/${created.id}/visits`, { scheduledFor: '2026-10-30', executiveRemark: 'Demo visit', assignedTo: 'executive@demo.in' });
   await mutate(`/school-visits/${visit.id}/outcome`, { visited: true, visitNote: 'Fictional visit completed' }, 'patch');
   assert.equal((await get(`/projects/${created.id}/visits`))[0].status, 'VISITED');
   assert.ok((await get('/audit-logs?page=1&size=100')).content.some(row => row.event === 'PAYMENT RECORDED'));
@@ -72,7 +72,7 @@ test('production catalog and monthly saves persist into history, trends and anal
   assert.ok((await get(`/production/history?from=${year}-01-01&to=${year}-12-31`)).some(e => e.productId === product.id && e.quantity === 17));
   assert.ok((await get(`/production/trends?year=${year}`)).find(e => e.month === month).totalQuantity >= 17);
   assert.ok((await get('/analytics/dashboard')).productionSummary.currentMonthQuantity >= 17);
-  assert.ok(values.has('workhub-demo.data.v1'));
+  assert.ok(values.has('workhub-demo.data.v3'));
 });
 
 test('the adapter rejects missing markers, unknown endpoints and cancellation before writes', async () => {
@@ -81,18 +81,18 @@ test('the adapter rejects missing markers, unknown endpoints and cancellation be
   await assert.rejects(request('/projects/create', 'post', { school: 'Must not exist' }, { signal: abort.signal }), e => axios.isCancel(e));
   assert.equal((await get('/projects/all')).length, before.length);
   await assert.rejects(request('/unimplemented'), e => e.response?.status === 404);
-  for (const marker of [undefined, 'broken', JSON.stringify({ version: 1, actorId: 9001, email: 'private@example.com' })]) {
-    marker === undefined ? values.delete('workhub-demo.session.v1') : values.set('workhub-demo.session.v1', marker);
+  for (const marker of [undefined, 'broken', JSON.stringify({ version: 2, actorId: 9001, email: 'private@example.com' })]) {
+    marker === undefined ? values.delete('workhub-demo.session.v2') : values.set('workhub-demo.session.v2', marker);
     await assert.rejects(request('/projects/all'), e => e.response?.status === 401);
   }
 });
 
 test('unsafe persisted state resets to seeded data and payload credentials never enter storage', async () => {
-  values.set('workhub-demo.data.v1', JSON.stringify({ version: 1, projects: [{ id: 3, school: 'PRIVATE RECORD' }] }));
+  values.set('workhub-demo.data.v3', JSON.stringify({ version: 1, projects: [{ id: 3, school: 'PRIVATE RECORD' }] }));
   assert.equal(JSON.stringify(await get('/projects/all')).includes('PRIVATE RECORD'), false);
   const user = (await request('/users/create', 'post', { name: 'Fictional Tester', email: 'tester@staff.example', role: 'ROLE_EXECUTIVE', zone: 'ZONE_1', password: 'DO-NOT-PERSIST' })).data;
   assert.equal(user.password, undefined);
-  assert.equal(values.get('workhub-demo.data.v1').includes('DO-NOT-PERSIST'), false);
+  assert.equal(values.get('workhub-demo.data.v3').includes('DO-NOT-PERSIST'), false);
   const actor = (await request('/users/update/9001', 'put', { role: 'ROLE_SUPER_ADMIN', email: 'changed@staff.example', googleId: 'SECRET' })).data;
   assert.equal(actor.role, 'ROLE_DEMO');
   assert.equal(actor.email, 'incial@demo.in');
@@ -128,10 +128,10 @@ test('demo profile, password and policy actions are local, persistent and creden
   await assert.rejects(request('/auth/password/change/confirm', 'post', { otp: '123456', newPassword: 'new-demo-password' }), e => e.response?.status === 400);
   const challenge = (await request('/auth/password/change/request', 'post', { currentPassword: 'incial', newPassword: 'new-demo-password', confirmPassword: 'new-demo-password' })).data;
   assert.match(challenge.message, /123456/);
-  assert.equal(values.get('workhub-demo.data.v1').includes('new-demo-password'), false);
+  assert.equal(values.get('workhub-demo.data.v3').includes('new-demo-password'), false);
   await assert.rejects(request('/auth/password/change/confirm', 'post', { otp: '000000', newPassword: 'new-demo-password' }), e => e.response?.status === 400);
   await request('/auth/password/change/confirm', 'post', { otp: '123456', newPassword: 'new-demo-password' });
-  assert.equal(values.get('workhub-demo.data.v1').includes('new-demo-password'), false);
+  assert.equal(values.get('workhub-demo.data.v3').includes('new-demo-password'), false);
 });
 
 test('pagination, zones, executive ownership and search follow existing API contracts', async () => {
@@ -174,4 +174,57 @@ test('every existing read endpoint returns its expected consumer shape locally',
     else if (shape === 'page') assert.ok(Array.isArray(result.content) && Number.isFinite(result.totalElements), endpoint);
     else assert.equal(typeof result, shape, endpoint);
   }
+});
+
+const signInAs = (id, email) => values.set('workhub-demo.session.v2', JSON.stringify({ version: 2, actorId: id, email }));
+
+test('each role account signs in as its own seeded user', async () => {
+  for (const [id, email, role] of [[9100, 'superadmin@demo.in', 'ROLE_SUPER_ADMIN'], [9101, 'admin@demo.in', 'ROLE_ADMIN'], [9103, 'executive@demo.in', 'ROLE_EXECUTIVE'], [9104, 'billing@demo.in', 'ROLE_SALES_COORDINATOR'], [9105, 'accounts@demo.in', 'ROLE_ACCOUNTS'], [9107, 'procurement@demo.in', 'ROLE_PRODUCTION']]) {
+    signInAs(id, email);
+    const me = (await request('/auth/me')).data;
+    assert.equal(me.email, email);
+    assert.equal(me.role, role);
+  }
+  signInAs(9103, 'billing@demo.in');
+  await assert.rejects(request('/auth/me'), /session/i);
+});
+
+test('the executive account sees and changes only its own schools', async () => {
+  signInAs(9103, 'executive@demo.in');
+  const own = await get('/projects/executive');
+  assert.ok(own.length >= 5);
+  assert.ok(own.every(project => project.createdBy === 'executive@demo.in' && project.zone === 'ZONE_1'));
+  signInAs(9001, 'incial@demo.in');
+  const other = (await get('/projects/all')).find(project => project.createdBy !== 'executive@demo.in');
+  signInAs(9103, 'executive@demo.in');
+  await assert.rejects(request(`/projects/${other.id}`), /own schools/);
+  await assert.rejects(request(`/projects/${other.id}`, 'put', { school: 'Hijacked' }), /own schools/);
+  const created = await mutate('/projects/create', { school: 'Executive Demo School', zone: 'ZONE_3' });
+  assert.equal(created.createdBy, 'executive@demo.in');
+  assert.equal(created.zone, 'ZONE_1');
+  const visit = await mutate(`/projects/${created.id}/visits`, { scheduledFor: '2026-12-01', executiveRemark: 'First visit', assignedTo: 'executive2@staff.example' });
+  assert.equal(visit.assignedTo, 'executive@demo.in');
+  assert.ok((await get('/school-visits')).every(row => row.assignedTo === 'executive@demo.in'));
+});
+
+test('each role may only perform its own workflow step', async () => {
+  const salesProject = (await get('/projects/sales'))[0];
+  signInAs(9103, 'executive@demo.in');
+  await assert.rejects(request(`/projects/${salesProject.id}/sales`, 'put', { invoiceAmount: 1000 }), /Executive account cannot/);
+  signInAs(9104, 'billing@demo.in');
+  await assert.rejects(request('/projects/create', 'post', { school: 'Not allowed' }), /Billing account cannot/);
+  const updated = await mutate(`/projects/${salesProject.id}/sales`, { invoiceAmount: 150000, expectedDeliveryDate: '2026-12-20' }, 'put');
+  assert.equal(updated.salesUserEmail ?? 'billing@demo.in', updated.salesUserEmail || 'billing@demo.in');
+  signInAs(9105, 'accounts@demo.in');
+  await assert.rejects(request('/production/summary', 'put', { month: 1, year: 2026, quantities: [] }), /Accounts account cannot/);
+  await assert.rejects(request('/users/create', 'post', { name: 'X', email: 'x@staff.example', role: 'ROLE_EXECUTIVE' }), /cannot/);
+  signInAs(9107, 'procurement@demo.in');
+  const saved = await mutate('/production/summary', { month: 1, year: 2026, quantities: [{ productId: 12001, quantity: 7 }] }, 'put');
+  assert.equal(saved.entries.find(entry => entry.productId === 12001).quantity, 7);
+  const history = await get('/production/history?from=2026-01-01&to=2026-01-31');
+  assert.equal(history.find(entry => entry.productId === 12001).updatedByEmail, 'procurement@demo.in');
+  signInAs(9101, 'admin@demo.in');
+  await assert.rejects(request('/users/delete/9103', 'delete'), /login accounts/);
+  const audit = await get('/audit-logs?size=200');
+  assert.ok(audit.content.some(row => row.actor.email === 'billing@demo.in' && row.actor.role === 'ROLE_SALES_COORDINATOR'));
 });

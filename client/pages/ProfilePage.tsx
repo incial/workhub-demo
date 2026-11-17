@@ -12,6 +12,7 @@ import { useToast } from '../context/ToastContext';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useOperatorView } from '../context/OperatorViewContext';
 import { safeDemoImage } from '../demo/network';
+import { formatRoleLabel } from '../utils/roleLabel';
 
 export const ProfilePage: React.FC = () => {
   const { user, updateUser } = useAuth();
@@ -42,7 +43,7 @@ export const ProfilePage: React.FC = () => {
     setEditableName(profileUser?.name || '');
   }, [profileUser?.name]);
 
-  const roleLabel = useMemo(() => (profileUser?.role || '').replace('ROLE_', '').replaceAll('_', ' '), [profileUser?.role]);
+  const roleLabel = useMemo(() => formatRoleLabel(profileUser?.role), [profileUser?.role]);
   const showExecutiveZone = profileUser?.role === 'ROLE_EXECUTIVE';
   const profileReturnPath = useMemo(() => {
     const from = (location.state as { from?: string } | null)?.from;
@@ -63,7 +64,7 @@ export const ProfilePage: React.FC = () => {
       case 'ROLE_INSTALLATION':
         return '/installation';
       case 'ROLE_PRODUCTION':
-        return '/production';
+        return '/procurement';
       case 'ROLE_OPERATOR':
         return '/operator';
       default:

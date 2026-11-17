@@ -13,6 +13,7 @@ import { projectApi } from '../services/api';
 import { Search, CheckCircle, Building2, MapPin, Calendar, DollarSign, Clock, Filter, ChevronDown, ExternalLink, Phone, User, Briefcase, Landmark, Wallet, Receipt, Wrench, FileText, Milestone, ShieldCheck, Layers3, ArrowUpRight, TrendingUp, Download } from 'lucide-react';
 import { KERALA_DISTRICTS } from '../constants/kerala-districts';
 import { PARENT_COMPANY_OPTIONS } from '../constants/dropdown-options';
+import { formatRoleLabel as sharedRoleLabel } from '../utils/roleLabel';
 
 const parseInstallationItems = (installationTaskList?: string): string[] => {
     return (installationTaskList || '')
@@ -29,7 +30,7 @@ const formatFirstMeetingOutcome = (outcome?: string): string => {
 
 const formatRoleLabel = (role?: string): string => {
     if (!role) return 'N/A';
-    return role.replace(/^ROLE_/, '').replace(/_/g, ' ');
+    return sharedRoleLabel(role);
 };
 
 const formatZoneLabel = (zone?: string): string => {

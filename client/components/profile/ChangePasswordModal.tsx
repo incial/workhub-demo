@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { X, Lock, KeyRound, Save, Loader2, ShieldCheck, CheckCircle2, AlertCircle } from 'lucide-react';
 import { authApi } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
-import { useAuth } from '../../context/AuthContext';
 
 interface ChangePasswordModalProps {
   isOpen: boolean;
@@ -11,7 +10,6 @@ interface ChangePasswordModalProps {
 
 export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen, onClose }) => {
   const { showToast } = useToast();
-  const { isDemo } = useAuth();
   const MIN_PASSWORD_LENGTH = 8;
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -51,7 +49,7 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen
         newPassword: formData.newPassword,
         confirmPassword: formData.confirmPassword,
       });
-      showToast(isDemo ? 'Demo verification code: 123456. No email was sent.' : 'OTP sent to your registered email', 'success');
+      showToast('Demo verification code: 123456. No email was sent.', 'success');
       setStep('confirmOtp');
     } catch (e: any) {
       setError(e.message || 'Failed to request OTP. Check your current password.');
@@ -73,7 +71,7 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen
         otp: formData.otp,
         newPassword: formData.newPassword,
       });
-      showToast(isDemo ? 'Demo password change simulated. The demo login stays the same.' : 'Password updated successfully', 'success');
+      showToast('Demo password change simulated. The demo password stays incial.', 'success');
       handleClose();
     } catch (e: any) {
       setError(e.message || 'Failed to verify OTP.');
@@ -161,7 +159,7 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen
             </>
           ) : (
             <>
-              <p className="text-xs text-gray-500 font-semibold">{isDemo ? 'Use demo code 123456. This demonstration does not send email or change a real password.' : 'OTP sent to your registered email. Enter it below to complete reset.'}</p>
+              <p className="text-xs text-gray-500 font-semibold">Use demo code 123456. This demonstration does not send email or change a real password.</p>
               <div>
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5 ml-1">OTP</label>
                 <div className="relative">

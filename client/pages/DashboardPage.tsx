@@ -536,7 +536,7 @@ export const DashboardPage: React.FC = () => {
                   <BarChart3 className="h-5 w-5 text-slate-700" />
                 </div>
                 <div>
-                  <p className="text-[11px] uppercase tracking-[0.28em] text-slate-500">Production lens</p>
+                  <p className="text-[11px] uppercase tracking-[0.28em] text-slate-500">Procurement lens</p>
                   <h2 className="premium-heading text-2xl font-bold text-slate-950">Factory Pulse</h2>
                 </div>
               </div>
@@ -552,7 +552,7 @@ export const DashboardPage: React.FC = () => {
               </div>
               <div className="mt-3 sm:mt-4 rounded-2xl sm:rounded-[1.6rem] border border-white/60 bg-slate-950/[0.86] px-4 sm:px-5 py-3 sm:py-4 text-white">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4">
-                  <span className="text-[10px] sm:text-xs uppercase tracking-[0.24em] text-slate-300">Monthly production trend</span>
+                  <span className="text-[10px] sm:text-xs uppercase tracking-[0.24em] text-slate-300">Monthly procurement trend</span>
                   <span className={`text-sm sm:text-base font-bold ${stats.productionSummary.monthlyProductionTrend >= 0 ? 'text-emerald-300' : 'text-rose-300'}`}>
                     {stats.productionSummary.monthlyProductionTrend >= 0 ? '+' : ''}{stats.productionSummary.monthlyProductionTrend.toFixed(1)}%
                   </span>
@@ -584,7 +584,7 @@ export const DashboardPage: React.FC = () => {
                           <span>{entry.timestamp ? new Date(entry.timestamp).toLocaleDateString('en-GB') : 'N/A'}</span>
                         </div>
                       </div>
-                    )) : <p className="mt-3 text-xs sm:text-sm text-slate-500">No recent production activity.</p>}
+                    )) : <p className="mt-3 text-xs sm:text-sm text-slate-500">No recent procurement activity.</p>}
                   </div>
                 </div>
               </div>

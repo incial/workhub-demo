@@ -1,7 +1,7 @@
 import type { AuditLogRow, ProductionEntry, ProductionProduct, Project, SchoolVisit, User, UserActivityLog } from '../types';
 import { createDemoSeed } from './seed';
 
-export const DEMO_DATA_KEY = 'workhub-demo.data.v3';
+export const DEMO_DATA_KEY = 'workhub-demo.data.v5';
 export interface DemoState {
   version: 1;
   provenance: 'workhub-demo-fictional-v1';

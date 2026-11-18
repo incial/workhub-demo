@@ -10,7 +10,12 @@ const staffRoles: UserRole[] = ['ROLE_SUPER_ADMIN', 'ROLE_ADMIN', 'ROLE_OPERATOR
 const zoneAt = (index: number): Zone => (['ZONE_1', 'ZONE_2', 'ZONE_3'] as Zone[])[index % 3];
 const schoolNames = ['Aurora', 'Meadow', 'Cedar', 'Bluebell', 'Willow', 'Silverleaf', 'Maple', 'Sunrise', 'Rainbow', 'Starlight', 'Riverstone', 'Oakwood', 'Moonbeam', 'Pinecrest', 'Springvale', 'Hillside', 'Lakeshore', 'Evergreen', 'Sunflower', 'Cloudberry', 'Brightwater', 'Rosewood', 'Elmwood', 'Skylark', 'Brookfield', 'Amberwood', 'Lavender', 'Seabreeze', 'Goldenleaf', 'Hazelwood'];
 
-export function createDemoSeed(): DemoState {
+/**
+ * Starting data for the showcase: every role, login account and staff user,
+ * with no projects and no procurement products. Pass `{ sampleProjects: true }`
+ * for the fictional pipeline and catalogue used by the tests.
+ */
+export function createDemoSeed({ sampleProjects = false }: { sampleProjects?: boolean } = {}): DemoState {
   const users: User[] = [{ id: 9001, name: 'Demo User', email: 'incial@demo.in', role: 'ROLE_DEMO', termsAccepted: true, createdAt: dateOffset(-90) }];
   for (let zone = 0; zone < 3; zone++) for (const [index, role] of staffRoles.entries()) {
     const id = 9100 + zone * 20 + index;
@@ -23,7 +28,7 @@ export function createDemoSeed(): DemoState {
   }
   /** Email of the seeded staff member for a role in a zone (zone 1 staff are the login accounts). */
   const staff = (role: UserRole, zone: number) => users.find(user => user.id === 9100 + zone * 20 + staffRoles.indexOf(role))!.email;
-  const projects: Project[] = schoolNames.map((name, index) => {
+  const projects: Project[] = !sampleProjects ? [] : schoolNames.map((name, index) => {
     const currentStage = stages[index % stages.length];
     const step = stages.indexOf(currentStage);
     const invoiceAmount = step >= 4 && currentStage !== 'DROPPED' ? 80000 + index * 4500 : undefined;
@@ -56,14 +61,14 @@ export function createDemoSeed(): DemoState {
       deletionRequestStatus: index === 9 ? 'PENDING' : 'NONE', deletionRequestReason: index === 9 ? 'Demo duplicate school record.' : undefined,
     };
   });
-  const products = [ { id: 12001, name: 'Demo Learning Panel', category: 'Classroom', status: 'ACTIVE' }, { id: 12002, name: 'Demo Activity Table', category: 'Furniture', status: 'ACTIVE' }, { id: 12003, name: 'Demo Science Display', category: 'Laboratory', status: 'ACTIVE' }, { id: 12004, name: 'Demo Garden Kit', category: 'Outdoor', status: 'ACTIVE' } ];
+  const products = !sampleProjects ? [] : [ { id: 12001, name: 'Demo Learning Panel', category: 'Classroom', status: 'ACTIVE' }, { id: 12002, name: 'Demo Activity Table', category: 'Furniture', status: 'ACTIVE' }, { id: 12003, name: 'Demo Science Display', category: 'Laboratory', status: 'ACTIVE' }, { id: 12004, name: 'Demo Garden Kit', category: 'Outdoor', status: 'ACTIVE' } ];
   const date = new Date();
   return {
     version: 1, provenance: 'workhub-demo-fictional-v1', users, projects, products,
     visits: projects.slice(0, 12).map((project, index) => ({ id: 13001 + index, projectId: project.id, school: project.school, projectName: project.projectName, scheduledFor: dateOffset(index % 4 - 1), assignedTo: project.createdBy, scheduledBy: 'incial@demo.in', executiveRemark: 'Fictional planned school visit.', status: index % 3 === 0 ? 'VISITED' : 'SCHEDULED', visitNote: index % 3 === 0 ? 'Sample learning spaces reviewed.' : undefined, outcomeRecordedAt: index % 3 === 0 ? now() : undefined, createdAt: now() })),
-    entries: products.flatMap((product, index) => [0, 1, 2].map(offset => { const period = new Date(date.getFullYear(), date.getMonth() - offset, 1); return { entryId: 14001 + index * 3 + offset, month: period.getMonth() + 1, year: period.getFullYear(), productId: product.id, productName: product.name, category: product.category, quantity: (index + 1) * 12 + offset * 4, timestamp: period.toISOString(), updatedByEmail: staff('ROLE_PRODUCTION', 0), updatedByName: 'Demo Procurement', updatedByRole: 'ROLE_PRODUCTION', updatedByZone: 'ZONE_1' }; })),
+    entries: !sampleProjects ? [] : products.flatMap((product, index) => [0, 1, 2].map(offset => { const period = new Date(date.getFullYear(), date.getMonth() - offset, 1); return { entryId: 14001 + index * 3 + offset, month: period.getMonth() + 1, year: period.getFullYear(), productId: product.id, productName: product.name, category: product.category, quantity: (index + 1) * 12 + offset * 4, timestamp: period.toISOString(), updatedByEmail: staff('ROLE_PRODUCTION', 0), updatedByName: 'Demo Procurement', updatedByRole: 'ROLE_PRODUCTION', updatedByZone: 'ZONE_1' }; })),
     activities: projects.map((project, index) => ({ id: 16001 + index, userId: users.find(user => user.email === project.createdBy)!.id, userRole: 'ROLE_EXECUTIVE', actionType: 'EXECUTIVE_LEAD_CREATED', entityType: 'PROJECT', entityId: project.id, timestamp: project.createdDate + 'T09:00:00Z', metadata: { school: project.school, projectName: project.projectName, zone: project.zone } })),
-    audits: [
+    audits: !sampleProjects ? [] : [
       ...projects.slice(0, 10).map((project, index) => ({ id: 17001 + index, event: 'PROJECT CREATED', description: `Created fictional school ${project.school}.`, projectName: project.projectName, actor: { name: 'Demo Executive', email: project.createdBy, role: 'ROLE_EXECUTIVE', zone: project.zone }, category: 'PROJECT' as const, timestamp: project.createdDate + 'T09:00:00Z' })),
       ...['USER LOGIN', 'VISIT SCHEDULED', 'PROJECT UPDATED', 'PROJECT COMPLETED', 'PAYMENT RECORDED', 'DELETION REQUESTED', 'PASSWORD_CHANGED'].map((event, index) => ({ id: 17100 + index, event, description: 'Fictional demonstration activity.', projectName: index === 0 || index === 6 ? undefined : projects[index].projectName, actor: { name: 'Demo User', email: 'incial@demo.in', role: 'ROLE_DEMO', zone: 'ZONE_1' }, category: index === 0 ? 'LOGIN' as const : index === 6 ? 'PASSWORD' as const : 'PROJECT' as const, timestamp: now() })),
     ],

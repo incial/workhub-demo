@@ -22,35 +22,32 @@ const request = async (url, method = 'get', data, extra = {}) => {
 const get = async url => (await request(url)).data.data;
 const mutate = async (url, data, method = 'post') => (await request(url, method, data)).data.data;
 // The shipped app starts with no projects; workflow tests run against the fictional sample pipeline.
-const DATA_KEY = 'workhub-demo.data.v6';
+const DATA_KEY = 'workhub-demo.data.v7';
 test.beforeEach(() => {
   values.clear();
   values.set('workhub-demo.session.v2', JSON.stringify({ version: 2, actorId: 9001, email: 'incial@demo.in' }));
-  values.set(DATA_KEY, JSON.stringify(simulator.createDemoSeed({ sampleProjects: true })));
+  values.set(DATA_KEY, JSON.stringify(simulator.createDemoSeed({ projects: 'full' })));
 });
 
-test('the shipped starting data has Workhub Demo projects for every role and procurement history', async () => {
+test('the shipped starting data has a few Workhub Demo projects: two each for Billing and Accounts', async () => {
   values.delete(DATA_KEY);
   const projects = await get('/projects/all');
-  assert.equal(projects.length, 39);
-  assert.ok(projects.every(project => /^Workhub Demo Project \d{2}$/.test(project.school) && project.contactPerson && project.district && project.projectName));
-  for (const stage of ['LEAD', 'ON_PROGRESS', 'QUOTATION_SENT', 'IN_REVIEW', 'ONBOARDED', 'SALES', 'ACCOUNTS', 'INSTALLATION', 'COMPLETED', 'DROPPED']) assert.ok(projects.some(project => project.currentStage === stage), stage);
+  assert.deepEqual(projects.map(project => project.school), ['01', '02', '03', '04', '05', '06'].map(number => `Workhub Demo Project ${number}`));
+  assert.deepEqual(projects.map(project => project.currentStage), ['LEAD', 'ON_PROGRESS', 'ONBOARDED', 'SALES', 'ACCOUNTS', 'ACCOUNTS']);
+  assert.ok(projects.every(project => project.contactPerson && project.district && project.projectName && project.createdBy === 'executive@demo.in'));
   const signIn = (id, email) => values.set('workhub-demo.session.v2', JSON.stringify({ version: 2, actorId: id, email }));
   signIn(9103, 'executive@demo.in');
-  const own = await get('/projects/executive');
-  assert.equal(own.length, 13);
+  assert.equal((await get('/projects/executive')).length, 6);
   assert.ok((await get('/school-visits')).length > 0);
   signIn(9104, 'billing@demo.in');
   const billing = await get('/projects/sales');
-  assert.equal(billing.length, 9);
-  assert.ok(billing.filter(project => project.currentStage === 'SALES').every(project => project.invoiceAmount > 0 && project.expectedDeliveryDate));
+  assert.equal(billing.length, 2);
+  assert.ok(billing.every(project => project.invoiceAmount > 0 && project.quotationRemarks));
   signIn(9105, 'accounts@demo.in');
   const accounts = await get('/projects/accounts');
-  assert.equal(accounts.length, 6);
+  assert.equal(accounts.length, 2);
   assert.ok(accounts.some(project => project.paymentStatus === 'PARTIAL' && project.paymentHistory.length === 1));
   assert.ok(accounts.some(project => project.paymentStatus === 'PENDING' && project.pendingAmount === project.invoiceAmount));
-  const completed = projects.filter(project => project.currentStage === 'COMPLETED');
-  assert.ok(completed.every(project => project.pendingAmount === 0 && project.installationStatus === 'WORK_DONE' && project.paymentHistory.length === 2));
   signIn(9107, 'procurement@demo.in');
   const products = await get('/production/products');
   assert.equal(products.length, 6);
@@ -58,12 +55,20 @@ test('the shipped starting data has Workhub Demo projects for every role and pro
   assert.equal((await get('/production/summary')).entries.filter(entry => entry.quantity > 0).length, 6);
   signIn(9001, 'incial@demo.in');
   const counts = await get('/audit-logs/counts');
-  assert.ok(counts.LOGIN_ACTIVITY > 0 && counts.PAYMENT_ACTIVITY > 0 && counts.PROJECT_COMPLETION > 0 && counts.DELETION_ACTIVITY > 0);
-  assert.equal((await get('/analytics/dashboard')).totalProjects, 39);
+  assert.ok(counts.LOGIN_ACTIVITY > 0 && counts.PAYMENT_ACTIVITY > 0);
+  assert.equal((await get('/analytics/dashboard')).totalProjects, 6);
+});
+
+test('the full test pipeline covers every stage in every zone', async () => {
+  const projects = await get('/projects/all');
+  assert.equal(projects.length, 39);
+  for (const stage of ['LEAD', 'ON_PROGRESS', 'QUOTATION_SENT', 'IN_REVIEW', 'ONBOARDED', 'SALES', 'ACCOUNTS', 'INSTALLATION', 'COMPLETED', 'DROPPED']) assert.ok(projects.some(project => project.currentStage === stage), stage);
+  assert.ok(projects.filter(project => project.currentStage === 'COMPLETED').every(project => project.pendingAmount === 0 && project.paymentHistory.length === 2));
+  assert.equal(projects.filter(project => project.currentStage === 'ACCOUNTS' && project.paymentStatus === 'PARTIAL').length, 3);
 });
 
 test('the users-only seed has every role and login but no projects or products', async () => {
-  values.set(DATA_KEY, JSON.stringify(simulator.createDemoSeed({ sampleProjects: false })));
+  values.set(DATA_KEY, JSON.stringify(simulator.createDemoSeed({ projects: 'none' })));
   for (const path of ['/projects/all', '/school-visits', '/production/products']) assert.deepEqual(await get(path), [], path);
   const users = (await request('/users/all')).data;
   for (const email of ['incial@demo.in', 'superadmin@demo.in', 'admin@demo.in', 'executive@demo.in', 'billing@demo.in', 'accounts@demo.in', 'procurement@demo.in']) assert.ok(users.some(user => user.email === email), email);
@@ -118,7 +123,7 @@ test('production catalog and monthly saves persist into history, trends and anal
   assert.ok((await get(`/production/history?from=${year}-01-01&to=${year}-12-31`)).some(e => e.productId === product.id && e.quantity === 17));
   assert.ok((await get(`/production/trends?year=${year}`)).find(e => e.month === month).totalQuantity >= 17);
   assert.ok((await get('/analytics/dashboard')).productionSummary.currentMonthQuantity >= 17);
-  assert.ok(values.has('workhub-demo.data.v6'));
+  assert.ok(values.has('workhub-demo.data.v7'));
 });
 
 test('the adapter rejects missing markers, unknown endpoints and cancellation before writes', async () => {
@@ -134,11 +139,11 @@ test('the adapter rejects missing markers, unknown endpoints and cancellation be
 });
 
 test('unsafe persisted state resets to seeded data and payload credentials never enter storage', async () => {
-  values.set('workhub-demo.data.v6', JSON.stringify({ version: 1, projects: [{ id: 3, school: 'PRIVATE RECORD' }] }));
+  values.set('workhub-demo.data.v7', JSON.stringify({ version: 1, projects: [{ id: 3, school: 'PRIVATE RECORD' }] }));
   assert.equal(JSON.stringify(await get('/projects/all')).includes('PRIVATE RECORD'), false);
   const user = (await request('/users/create', 'post', { name: 'Fictional Tester', email: 'tester@staff.example', role: 'ROLE_EXECUTIVE', zone: 'ZONE_1', password: 'DO-NOT-PERSIST' })).data;
   assert.equal(user.password, undefined);
-  assert.equal(values.get('workhub-demo.data.v6').includes('DO-NOT-PERSIST'), false);
+  assert.equal(values.get('workhub-demo.data.v7').includes('DO-NOT-PERSIST'), false);
   const actor = (await request('/users/update/9001', 'put', { role: 'ROLE_SUPER_ADMIN', email: 'changed@staff.example', googleId: 'SECRET' })).data;
   assert.equal(actor.role, 'ROLE_DEMO');
   assert.equal(actor.email, 'incial@demo.in');
@@ -174,10 +179,10 @@ test('demo profile, password and policy actions are local, persistent and creden
   await assert.rejects(request('/auth/password/change/confirm', 'post', { otp: '123456', newPassword: 'new-demo-password' }), e => e.response?.status === 400);
   const challenge = (await request('/auth/password/change/request', 'post', { currentPassword: 'incial', newPassword: 'new-demo-password', confirmPassword: 'new-demo-password' })).data;
   assert.match(challenge.message, /123456/);
-  assert.equal(values.get('workhub-demo.data.v6').includes('new-demo-password'), false);
+  assert.equal(values.get('workhub-demo.data.v7').includes('new-demo-password'), false);
   await assert.rejects(request('/auth/password/change/confirm', 'post', { otp: '000000', newPassword: 'new-demo-password' }), e => e.response?.status === 400);
   await request('/auth/password/change/confirm', 'post', { otp: '123456', newPassword: 'new-demo-password' });
-  assert.equal(values.get('workhub-demo.data.v6').includes('new-demo-password'), false);
+  assert.equal(values.get('workhub-demo.data.v7').includes('new-demo-password'), false);
 });
 
 test('pagination, zones, executive ownership and search follow existing API contracts', async () => {

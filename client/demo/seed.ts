@@ -14,8 +14,10 @@ const staffRoles: UserRole[] = ['ROLE_SUPER_ADMIN', 'ROLE_ADMIN', 'ROLE_OPERATOR
 const zones: Zone[] = ['ZONE_1', 'ZONE_2', 'ZONE_3'];
 const zoneAt = (index: number): Zone => zones[index % 3];
 
-/** Every zone gets the same pipeline, so each executive, Billing and Accounts have work at every step. */
-const STAGE_PLAN: ProjectStage[] = ['LEAD', 'LEAD', 'ON_PROGRESS', 'QUOTATION_SENT', 'IN_REVIEW', 'ONBOARDED', 'SALES', 'SALES', 'ACCOUNTS', 'ACCOUNTS', 'INSTALLATION', 'COMPLETED', 'DROPPED'];
+/** Shipped demo: a few zone-1 projects owned by executive@demo.in (2 leads, 2 for Billing, 2 for Accounts). */
+const DEMO_PLAN: ProjectStage[] = ['LEAD', 'ON_PROGRESS', 'ONBOARDED', 'SALES', 'ACCOUNTS', 'ACCOUNTS'];
+/** Test fixture: the same pipeline in every zone, covering every workflow stage. */
+const FULL_PLAN: ProjectStage[] = ['LEAD', 'LEAD', 'ON_PROGRESS', 'QUOTATION_SENT', 'IN_REVIEW', 'ONBOARDED', 'SALES', 'SALES', 'ACCOUNTS', 'ACCOUNTS', 'INSTALLATION', 'COMPLETED', 'DROPPED'];
 const STEP_DAYS = 8;
 const ACCOUNTS_AGES = [4, 15, 6, 25, 12, 3];
 const ORDER: ProjectStage[] = ['LEAD', 'ON_PROGRESS', 'QUOTATION_SENT', 'IN_REVIEW', 'ONBOARDED', 'SALES', 'ACCOUNTS', 'INSTALLATION', 'COMPLETED'];
@@ -27,11 +29,11 @@ const PRODUCTS = ['Workhub Demo Swing Set', 'Workhub Demo Fitness Station', 'Wor
 
 /**
  * Starting data for the showcase: every role, login account and staff user,
- * a "Workhub Demo Project" pipeline covering every workflow stage, and a
- * procurement catalogue with six months of quantities. Pass
- * `{ sampleProjects: false }` for users only.
+ * a few "Workhub Demo Project" records (`projects: 'demo'`), and a procurement
+ * catalogue with six months of quantities. Tests use `projects: 'full'` for a
+ * pipeline covering every stage in every zone, or `'none'` for users only.
  */
-export function createDemoSeed({ sampleProjects = true }: { sampleProjects?: boolean } = {}): DemoState {
+export function createDemoSeed({ projects: plan = 'demo' }: { projects?: 'demo' | 'full' | 'none' } = {}): DemoState {
   const users: User[] = [{ id: 9001, name: 'Demo User', email: 'incial@demo.in', role: 'ROLE_DEMO', termsAccepted: true, createdAt: dateOffset(-180) }];
   for (let zone = 0; zone < 3; zone++) for (const [index, role] of staffRoles.entries()) {
     const id = 9100 + zone * 20 + index;
@@ -44,7 +46,7 @@ export function createDemoSeed({ sampleProjects = true }: { sampleProjects?: boo
   }
   /** The seeded staff member for a role in a zone (zone 1 staff are the login accounts). */
   const staff = (role: UserRole, zone: number) => users.find(user => user.id === 9100 + zone * 20 + staffRoles.indexOf(role))!;
-  if (!sampleProjects) {
+  if (plan === 'none') {
     return { version: 1, provenance: 'workhub-demo-fictional-v1', users, projects: [], products: [], visits: [], entries: [], activities: [], audits: [] };
   }
 
@@ -57,8 +59,12 @@ export function createDemoSeed({ sampleProjects = true }: { sampleProjects?: boo
     audits.push({ id: 17001 + audits.length, event, description, projectName: project.projectName, amountReceived: project.amountReceived, pendingAmount: project.pendingAmount, actor: { name: user.name, email: user.email, role: user.role, zone: user.zone ?? project.zone }, category, timestamp });
   };
 
-  for (let zone = 0; zone < 3; zone++) STAGE_PLAN.forEach((currentStage, slot) => {
-    const index = zone * STAGE_PLAN.length + slot;
+  const stagePlan = plan === 'full' ? FULL_PLAN : DEMO_PLAN;
+  let accountsSeen = 0;
+  for (let zone = 0; zone < (plan === 'full' ? 3 : 1); zone++) stagePlan.forEach((currentStage, slot) => {
+    const index = zone * stagePlan.length + slot;
+    // Within each zone the first Accounts project is unpaid and the second part-paid.
+    const accountsTurn = currentStage === 'ACCOUNTS' ? accountsSeen++ : -1;
     const number = String(index + 1).padStart(2, '0');
     const step = ORDER.indexOf(currentStage);
     const dropped = currentStage === 'DROPPED';
@@ -66,7 +72,7 @@ export function createDemoSeed({ sampleProjects = true }: { sampleProjects?: boo
     const executive = staff('ROLE_EXECUTIVE', zone), sales = staff('ROLE_SALES_COORDINATOR', zone), accounts = staff('ROLE_ACCOUNTS', zone), installation = staff('ROLE_INSTALLATION', zone);
     // Each project entered its current stage recently (Accounts ages spread over green / yellow / red);
     // earlier milestones are eight days apart going back from there.
-    const stageAge = currentStage === 'ACCOUNTS' ? ACCOUNTS_AGES[zone * 2 + (slot - 8)] : 1 + ((slot * 3 + zone * 2) % 11);
+    const stageAge = accountsTurn >= 0 ? ACCOUNTS_AGES[accountsTurn % ACCOUNTS_AGES.length] : 1 + ((slot * 3 + zone * 2) % 11);
     const stageEntered = dateOffset(-stageAge);
     const createdDate = daysAfter(stageEntered, -(dropped ? 20 : step * STEP_DAYS));
     const milestone = (stepIndex: number) => daysAfter(createdDate, stepIndex * STEP_DAYS);
@@ -80,7 +86,7 @@ export function createDemoSeed({ sampleProjects = true }: { sampleProjects?: boo
     if (invoiceAmount) {
       const firstHalf = Math.round(invoiceAmount / 2);
       const salesDone = milestone(6);
-      if (currentStage === 'ACCOUNTS' && slot === 9) payments.push({ id: 15000 + index * 2, projectId: id, amountPaid: firstHalf, paymentDate: daysAfter(salesDone, 2), remarks: 'Advance received for Workhub Demo Project.', createdAt: at(daysAfter(salesDone, 2)), createdBy: accounts.email });
+      if (accountsTurn % 2 === 1) payments.push({ id: 15000 + index * 2, projectId: id, amountPaid: firstHalf, paymentDate: daysAfter(salesDone, 2), remarks: 'Advance received for Workhub Demo Project.', createdAt: at(daysAfter(salesDone, 2)), createdBy: accounts.email });
       if (currentStage === 'INSTALLATION' || currentStage === 'COMPLETED') {
         payments.push({ id: 15000 + index * 2, projectId: id, amountPaid: firstHalf, paymentDate: daysAfter(salesDone, 2), remarks: 'Advance received for Workhub Demo Project.', createdAt: at(daysAfter(salesDone, 2)), createdBy: accounts.email });
         payments.push({ id: 15001 + index * 2, projectId: id, amountPaid: invoiceAmount - firstHalf, paymentDate: daysAfter(salesDone, 6), remarks: 'Balance settled.', createdAt: at(daysAfter(salesDone, 6)), createdBy: accounts.email });

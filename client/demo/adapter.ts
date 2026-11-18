@@ -21,9 +21,9 @@ const titleCase = (value: string) => value.split(' ').map(word => word.charAt(0)
 const roleName = (role: UserRole) => role === 'ROLE_PRODUCTION' ? 'Procurement' : role === 'ROLE_SALES_COORDINATOR' ? 'Billing' : titleCase(role.replace('ROLE_', '').toLowerCase().replace(/_/g, ' '));
 /** Server-style role check: admins may do everything, other roles only their own workflow step. */
 const allow = (...roles: UserRole[]) => { if (!ADMIN_ROLES.includes(me.role) && !roles.includes(me.role)) fail(403, `The ${roleName(me.role)} account cannot perform this action.`); };
-/** Executives only see and change schools they own, like the backend's ZoneAccessService. */
+/** Executives only see and change projects they own, like the backend's ZoneAccessService. */
 const ownsProject = (project: Project) => me.role !== 'ROLE_EXECUTIVE' || project.createdBy === me.email;
-const requireOwner = (project: Project) => { if (!ownsProject(project)) fail(403, 'Executives can only work on their own schools.'); return project; };
+const requireOwner = (project: Project) => { if (!ownsProject(project)) fail(403, 'Executives can only work on their own projects.'); return project; };
 const projectById = (state: DemoState, id: number) => state.projects.find(project => project.id === id) ?? fail(404, 'Fictional project not found.');
 const userById = (state: DemoState, id: number) => state.users.find(user => user.id === id) ?? fail(404, 'Fictional user not found.');
 const projectBaseFields = ['school', 'contactPerson', 'contactNumber', 'place', 'district', 'region', 'zone', 'projectName', 'parentCompany', 'executiveRemarks', 'lastContact', 'nextContact', 'firstMeetingOutcome', 'projectValue', 'invoiceAmount', 'isExtraWorkNeeded'];
@@ -181,7 +181,7 @@ function mutateRoute(state: DemoState, method: string, path: string, data: Paylo
   if (method === 'delete' && (match = path.match(/^\/users\/delete\/(\d+)$/))) { allow(); const user = userById(state, Number(match[1])); if (isLoginAccount(user.id)) fail(403, 'Demo login accounts cannot be deleted.'); state.users = state.users.filter(item => item.id !== user.id); log(state, 'ADMIN_USER_ROLE_UPDATED', 'USER', user.id, 'DELETION APPROVED', 'Fictional staff account removed.'); return undefined; }
   if (method === 'post' && path === '/projects/create') {
     allow('ROLE_EXECUTIVE');
-    requireValue(state.projects.length < 500, 'Reset the demo before adding more fictional projects.'); requireValue(text(data.school), 'School name is required.');
+    requireValue(state.projects.length < 500, 'Reset the demo before adding more fictional projects.'); requireValue(text(data.school), 'Customer name is required.');
     const project: Project = { id: nextId(state.projects), school: text(data.school), currentStage: 'LEAD', createdBy: me.email, createdDate: today(), zone: me.zone ?? 'ZONE_1', paymentHistory: [], deletionRequestStatus: 'NONE' };
     assignFields(project, data, projectBaseFields); if (me.role === 'ROLE_EXECUTIVE' && me.zone) project.zone = me.zone; state.projects.push(project); log(state, 'EXECUTIVE_LEAD_CREATED', 'PROJECT', project.id, 'PROJECT CREATED', 'Fictional project created.', project); return projectView(project);
   }
@@ -203,10 +203,10 @@ function mutateRoute(state: DemoState, method: string, path: string, data: Paylo
       const visit = { id: nextId(state.visits), projectId: project.id, school: project.school, projectName: project.projectName, scheduledFor, assignedTo, scheduledBy: me.email, executiveRemark: text(data.executiveRemark), status: 'SCHEDULED' as const, createdAt: now() };
       state.visits.push(visit); project.lastContact = today(); project.lastVisitDate = today(); project.executiveRemarks = visit.executiveRemark;
       if (data.nextContact) project.nextContact = date(data.nextContact, 'Next contact date');
-      log(state, 'EXECUTIVE_PROJECT_UPDATED', 'PROJECT', project.id, 'VISIT SCHEDULED', 'Fictional school visit scheduled.', project); return visit;
+      log(state, 'EXECUTIVE_PROJECT_UPDATED', 'PROJECT', project.id, 'VISIT SCHEDULED', 'Fictional site visit scheduled.', project); return visit;
     }
     let actionType: ActivityActionType = 'EXECUTIVE_PROJECT_UPDATED', event = 'PROJECT UPDATED';
-    if (method === 'put' && !action) { if (data.school !== undefined) requireValue(text(data.school), 'School name is required.'); assignFields(project, data, projectBaseFields); }
+    if (method === 'put' && !action) { if (data.school !== undefined) requireValue(text(data.school), 'Customer name is required.'); assignFields(project, data, projectBaseFields); }
     else if (method === 'patch' && action === 'additional-data') { assignFields(project, data, ['brc', 'projectCategory', 'projectType', 'enquiryType', 'needHelp', 'salesOfficeRemark']); project.salesOffice = project.needHelp === 'SALES_OFFICE'; project.salesHead = project.needHelp === 'SALES_HEAD'; }
     else if (method === 'post' && action === 'transition') { changeStage(project, data.toStage as ProjectStage); actionType = 'EXECUTIVE_STAGE_ADVANCED'; event = project.currentStage === 'COMPLETED' ? 'PROJECT COMPLETED' : 'PROJECT MOVED'; }
     else if (method === 'put' && action === 'sales') {
@@ -245,7 +245,7 @@ function mutateRoute(state: DemoState, method: string, path: string, data: Paylo
     requireValue(typeof data.visited === 'boolean', 'Choose a visit outcome.'); if (!data.visited) requireValue(text(data.notVisitedReason), 'Enter a reason for the missed visit.');
     Object.assign(visit, { status: data.visited ? 'VISITED' : 'NOT_VISITED', visitNote: text(data.visitNote), notVisitedReason: data.visited ? undefined : text(data.notVisitedReason), outcomeRecordedAt: now(), outcomeRecordedBy: me.email });
     const project = projectById(state, visit.projectId); if (data.visited) { project.lastVisitDate = today(); project.lastContact = today(); }
-    log(state, 'EXECUTIVE_PROJECT_UPDATED', 'PROJECT', project.id, 'PROJECT UPDATED', 'Fictional school visit outcome recorded.', project); return visit;
+    log(state, 'EXECUTIVE_PROJECT_UPDATED', 'PROJECT', project.id, 'PROJECT UPDATED', 'Fictional site visit outcome recorded.', project); return visit;
   }
   if (method === 'post' && path === '/production/products') { allow('ROLE_PRODUCTION'); requireValue(text(data.name) && text(data.category), 'Product name and category are required.'); requireValue(!state.products.some(product => product.name.toLowerCase() === text(data.name).toLowerCase()), 'A fictional product with this name already exists.'); const product = { id: nextId(state.products), name: text(data.name, 100), category: text(data.category, 100), status: 'ACTIVE' }; state.products.push(product); log(state, 'PRODUCTION_PRODUCT_ADDED', 'PRODUCTION_PRODUCT', product.id, 'PROJECT UPDATED', 'Fictional product added.'); return product; }
   if (method === 'put' && path === '/production/summary') {

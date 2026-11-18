@@ -223,7 +223,7 @@ const validateExecutiveProjectForm = (
 const getExecutiveOnboardingMissingFields = (project: Project) => {
     const missingFields: string[] = [];
 
-    if (!project.school?.trim()) missingFields.push('School Name');
+    if (!project.school?.trim()) missingFields.push('Customer Name');
     if (!project.projectName?.trim()) missingFields.push('Project Name');
     if (!project.contactPerson?.trim()) missingFields.push('Contact Person');
     if (!project.contactNumber?.trim()) missingFields.push('Contact Number');
@@ -242,7 +242,7 @@ const getExecutiveOnboardingRequirementsMessage = (project?: Project) => {
         return `Before moving this project to onboarded, add: ${missingFields.join(', ')}.`;
     }
 
-    return 'Before moving this project to onboarded, add all mandatory fields: School Name, Project Name, Contact Person, Contact Number, Place, District, Parent Company, Project Value, and First Meeting Feedback.';
+    return 'Before moving this project to onboarded, add all mandatory fields: Customer Name, Project Name, Contact Person, Contact Number, Place, District, Parent Company, Project Value, and First Meeting Feedback.';
 };
 
 const formatZoneLabel = (zone?: string) => {
@@ -745,7 +745,7 @@ export const ExecutivePage: React.FC = () => {
                 || /^bad request$/i.test(serverMessage)
                 || /^\d{3}$/.test(serverMessage)
                 || serverMessage === 'One or more mandatory fields must be entered before moving to the next stage.'
-                || serverMessage === 'Before moving this project to onboarded, add all mandatory fields: School Name, Project Name, Contact Person, Contact Number, Place, District, Parent Company, Project Value, and First Meeting Feedback.';
+                || serverMessage === 'Before moving this project to onboarded, add all mandatory fields: Customer Name, Project Name, Contact Person, Contact Number, Place, District, Parent Company, Project Value, and First Meeting Feedback.';
 
             if (shouldShowMandatoryFields) {
                 showToast(getExecutiveOnboardingRequirementsMessage(project), 'error');
@@ -898,7 +898,7 @@ export const ExecutivePage: React.FC = () => {
             return [];
         }
         return [
-            `${todayVisitProjects.length} school${todayVisitProjects.length === 1 ? '' : 's'} to be visited today`
+            `${todayVisitProjects.length} site${todayVisitProjects.length === 1 ? '' : 's'} to be visited today`
         ];
     }, [todayVisitProjects]);
 
@@ -1017,7 +1017,7 @@ export const ExecutivePage: React.FC = () => {
                             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                             <input
                                 type="text"
-                                placeholder="Search all accessible projects by school, contact person, or phone..."
+                                placeholder="Search all accessible projects by customer, contact person, or phone..."
                                 value={searchInput}
                                 onChange={(e) => {
                                     const value = e.target.value;
@@ -1328,7 +1328,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
                     <div className="flex flex-wrap items-center justify-between gap-3">
                         <div>
                             <p className="text-[11px] font-black uppercase tracking-[0.22em] text-white/80">Today's Visit Priority</p>
-                            <p className="mt-1 text-base font-black">School visit scheduled for today</p>
+                            <p className="mt-1 text-base font-black">Site visit scheduled for today</p>
                         </div>
                         <span className="inline-flex items-center rounded-full bg-white/20 px-3 py-1 text-[11px] font-black uppercase tracking-[0.18em] text-white">
                             {nextContactStatus.shortLabel}
@@ -1554,10 +1554,10 @@ const ScheduleSchoolVisitModal: React.FC<{
                 nextContact: nextContact || undefined,
                 executiveRemark: executiveRemark.trim()
             });
-            showToast('School visit scheduled.', 'success');
+            showToast('Site visit scheduled.', 'success');
             onScheduled();
         } catch (error: any) {
-            showToast(error.message || 'Failed to schedule school visit.', 'error');
+            showToast(error.message || 'Failed to schedule site visit.', 'error');
         } finally {
             setSaving(false);
         }
@@ -1566,7 +1566,7 @@ const ScheduleSchoolVisitModal: React.FC<{
     return (
         <div className="fixed inset-0 z-[130] flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm" onClick={onClose}>
             <form onSubmit={submit} onClick={(event) => event.stopPropagation()} className="w-full max-w-lg rounded-3xl border border-white/70 bg-white p-6 shadow-2xl">
-                <h2 className="text-xl font-black text-slate-900">Schedule school visit</h2>
+                <h2 className="text-xl font-black text-slate-900">Schedule site visit</h2>
                 <p className="mt-1 text-sm text-slate-600">{project.school}</p>
                 <label className="mt-5 block text-sm font-bold text-slate-700">Visit date
                     <input required type="date" min={getTodayDateInputValue()} value={scheduledFor} onChange={(event) => setScheduledFor(event.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2.5 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100" />
@@ -1578,7 +1578,7 @@ const ScheduleSchoolVisitModal: React.FC<{
                     <input type="date" min={scheduledFor || getTodayDateInputValue()} value={nextContact} onChange={(event) => setNextContact(event.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2.5 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100" />
                 </label>
                 <label className="mt-4 block text-sm font-bold text-slate-700">Executive remark <span className="text-rose-500">*</span>
-                    <textarea required value={executiveRemark} onChange={(event) => setExecutiveRemark(event.target.value)} maxLength={4000} rows={4} placeholder="Add the latest school discussion, requirement, or follow-up context" className="mt-2 w-full resize-none rounded-xl border border-violet-200 bg-violet-50/40 px-3 py-2.5 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100" />
+                    <textarea required value={executiveRemark} onChange={(event) => setExecutiveRemark(event.target.value)} maxLength={4000} rows={4} placeholder="Add the latest customer discussion, requirement, or follow-up context" className="mt-2 w-full resize-none rounded-xl border border-violet-200 bg-violet-50/40 px-3 py-2.5 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100" />
                 </label>
                 <p className="mt-2 rounded-xl border border-violet-100 bg-violet-50 px-3 py-2 text-xs font-medium leading-5 text-violet-800">This becomes the project's current Executive Remark and remains attached to this scheduled visit.</p>
                 <div className="mt-6 flex justify-end gap-3">
@@ -1603,11 +1603,11 @@ const SchoolVisitOutcomeModal: React.FC<{
     const submit = async (event: React.FormEvent) => {
         event.preventDefault();
         if (visited === null) {
-            showToast('Select whether the school was visited.', 'error');
+            showToast('Select whether the site was visited.', 'error');
             return;
         }
         if (!details.trim()) {
-            showToast(visited ? 'Enter a visit note.' : 'Enter the reason the school was not visited.', 'error');
+            showToast(visited ? 'Enter a visit note.' : 'Enter the reason the site was not visited.', 'error');
             return;
         }
         setSaving(true);
@@ -1615,7 +1615,7 @@ const SchoolVisitOutcomeModal: React.FC<{
             await schoolVisitApi.recordOutcome(visit.id, visited
                 ? { visited: true, visitNote: details.trim() }
                 : { visited: false, notVisitedReason: details.trim() });
-            showToast('School visit outcome recorded.', 'success');
+            showToast('Site visit outcome recorded.', 'success');
             onRecorded();
         } catch (error: any) {
             showToast(error.message || 'Failed to record visit outcome.', 'error');
@@ -1627,9 +1627,9 @@ const SchoolVisitOutcomeModal: React.FC<{
     return (
         <div className="fixed inset-0 z-[140] flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm" onClick={onClose}>
             <form onSubmit={submit} onClick={(event) => event.stopPropagation()} className="w-full max-w-lg rounded-3xl border border-white/70 bg-white p-6 shadow-2xl">
-                <p className="text-[11px] font-black uppercase tracking-[0.2em] text-emerald-700">Today&apos;s school visit</p>
+                <p className="text-[11px] font-black uppercase tracking-[0.2em] text-emerald-700">Today&apos;s site visit</p>
                 <h2 className="mt-1 text-xl font-black text-slate-900">{visit.school}</h2>
-                <p className="mt-2 text-sm text-slate-600">Was this school visited?</p>
+                <p className="mt-2 text-sm text-slate-600">Was this site visited?</p>
                 <div className="mt-4 grid grid-cols-2 gap-3">
                     <button type="button" onClick={() => setVisited(true)} className={`rounded-xl border px-4 py-3 text-sm font-bold ${visited === true ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-slate-200 text-slate-600 hover:bg-slate-50'}`}>Yes, visited</button>
                     <button type="button" onClick={() => setVisited(false)} className={`rounded-xl border px-4 py-3 text-sm font-bold ${visited === false ? 'border-rose-500 bg-rose-50 text-rose-700' : 'border-slate-200 text-slate-600 hover:bg-slate-50'}`}>No, not visited</button>
@@ -1834,15 +1834,15 @@ const ExecutiveProjectFormModal: React.FC<{
                     )}
 
                     <div className="grid gap-5 xl:grid-cols-2">
-                        <FormSectionCard icon={<Building2 size={20} />} title="School Information" description="Start with the identity of the institution and the lead opportunity.">
+                        <FormSectionCard icon={<Building2 size={20} />} title="Customer Information" description="Start with the identity of the institution and the lead opportunity.">
                             <div className="space-y-4">
                                 <div>
-                                    <FormFieldLabel title="School Name" required />
-                                    <input type="text" required value={formData.school} onChange={(e) => setFormData({ ...formData, school: e.target.value })} className={inputClassName} placeholder="Enter school name" />
+                                    <FormFieldLabel title="Customer Name" required />
+                                    <input type="text" required value={formData.school} onChange={(e) => setFormData({ ...formData, school: e.target.value })} className={inputClassName} placeholder="Enter customer name" />
                                 </div>
                                 <div>
                                     <FormFieldLabel title="Project Name" required />
-                                    <input type="text" value={formData.projectName} onChange={(e) => setFormData({ ...formData, projectName: e.target.value })} className={inputClassName} placeholder="e.g., Smart Classroom Setup" />
+                                    <input type="text" value={formData.projectName} onChange={(e) => setFormData({ ...formData, projectName: e.target.value })} className={inputClassName} placeholder="e.g., Smart Room Setup" />
                                 </div>
                             </div>
                         </FormSectionCard>
@@ -1872,7 +1872,7 @@ const ExecutiveProjectFormModal: React.FC<{
                     </div>
 
                     <div className="grid gap-5 xl:grid-cols-2">
-                        <FormSectionCard icon={<MapPin size={20} />} title="Location Details" description="Capture where the school is located and make district selection easier to search.">
+                        <FormSectionCard icon={<MapPin size={20} />} title="Location Details" description="Capture where the customer is located and make district selection easier to search.">
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                 <div>
                                     <FormFieldLabel title="Place" required />
@@ -1965,7 +1965,7 @@ const ExecutiveProjectFormModal: React.FC<{
                             )}
                         </div>
                         <div className="mt-5">
-                            <FormFieldLabel title="School Location Link (Google Maps)" required />
+                            <FormFieldLabel title="Customer Location Link (Google Maps)" required />
                             <textarea value={formData.schoolLocationLink || ''} onChange={(e) => setFormData({ ...formData, schoolLocationLink: e.target.value })} rows={2} className={`${inputClassName} resize-none`} placeholder="Paste Google Maps link" />
                         </div>
                     </FormSectionCard>
@@ -2098,18 +2098,18 @@ const ExecutiveAdditionalDataModal: React.FC<{
                         <div>
                             <div className="inline-flex rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-black uppercase tracking-[0.22em] text-violet-100">Executive Additional Data</div>
                             <h2 className="mt-3 text-2xl font-black tracking-tight sm:text-3xl">Add project data</h2>
-                            <p className="mt-2 text-sm text-violet-100/90">Capture optional school-sheet details for <span className="font-bold text-white">{project.school}</span>. None of these fields are required during project creation.</p>
+                            <p className="mt-2 text-sm text-violet-100/90">Capture optional customer sheet details for <span className="font-bold text-white">{project.school}</span>. None of these fields are required during project creation.</p>
                         </div>
                         <button type="button" onClick={onClose} className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/15 bg-white/10 text-white transition hover:bg-white/20" aria-label="Close additional data form"><X size={20} /></button>
                     </div>
                 </div>
 
                 <form onSubmit={submit} className="space-y-5">
-                    <FormSectionCard icon={<FileText size={20} />} title="School sheet details" description="These fields are maintained by the executive and remain optional.">
+                    <FormSectionCard icon={<FileText size={20} />} title="Customer sheet details" description="These fields are maintained by the executive and remain optional.">
                         <div className="grid gap-4 md:grid-cols-2">
                             <div>
-                                <FormFieldLabel title="BRC" />
-                                <input className={inputClassName} value={formData.brc || ''} maxLength={255} onChange={(event) => setFormData((current) => ({ ...current, brc: event.target.value || undefined }))} placeholder="Enter BRC" />
+                                <FormFieldLabel title="Cluster" />
+                                <input className={inputClassName} value={formData.brc || ''} maxLength={255} onChange={(event) => setFormData((current) => ({ ...current, brc: event.target.value || undefined }))} placeholder="Enter cluster" />
                             </div>
                             <div>
                                 <FormFieldLabel title="Category" />
@@ -2316,7 +2316,7 @@ const ProjectDetailsModal: React.FC<{
 
                     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                         <div className={detailCardClassName}>
-                            <p className={detailLabelClassName}>School</p>
+                            <p className={detailLabelClassName}>Customer</p>
                             <p className="mt-2 text-sm font-semibold text-gray-900">{project.school}</p>
                         </div>
                         <div className={detailCardClassName}>
@@ -2348,12 +2348,12 @@ const ProjectDetailsModal: React.FC<{
                             </div>
                             <div>
                                 <p className="text-[11px] font-black uppercase tracking-[0.18em] text-violet-700">Add Data Details</p>
-                                <p className="mt-1 text-sm font-medium text-slate-600">Executive-entered school details and the values synchronized from the project workflow.</p>
+                                <p className="mt-1 text-sm font-medium text-slate-600">Executive-entered customer details and the values synchronized from the project workflow.</p>
                             </div>
                         </div>
                         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                             {[
-                                ['BRC', project.brc || 'Not set'],
+                                ['Cluster', project.brc || 'Not set'],
                                 ['Category', formatExecutiveAdditionalDataValue(project.projectCategory)],
                                 ['Project Type', formatExecutiveAdditionalDataValue(project.projectType)],
                                 ['Enquiry', formatExecutiveAdditionalDataValue(project.enquiryType)],
@@ -2408,7 +2408,7 @@ const ProjectDetailsModal: React.FC<{
                                     rel="noreferrer"
                                     className="mt-2 inline-flex text-sm font-semibold text-brand-700 underline decoration-brand-300 underline-offset-4"
                                 >
-                                    Open school location
+                                    Open customer location
                                 </a>
                             ) : (
                                 <p className="mt-2 text-sm font-semibold text-gray-900">Not added</p>

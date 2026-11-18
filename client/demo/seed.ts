@@ -21,11 +21,11 @@ const FULL_PLAN: ProjectStage[] = ['LEAD', 'LEAD', 'ON_PROGRESS', 'QUOTATION_SEN
 const STEP_DAYS = 8;
 const ACCOUNTS_AGES = [4, 15, 6, 25, 12, 3];
 const ORDER: ProjectStage[] = ['LEAD', 'ON_PROGRESS', 'QUOTATION_SENT', 'IN_REVIEW', 'ONBOARDED', 'SALES', 'ACCOUNTS', 'INSTALLATION', 'COMPLETED'];
-const WORKS = ['Outdoor Play Area', 'Smart Classroom Setup', 'Science Lab Upgrade', 'Art and Craft Studio', 'Fitness Zone', 'Reading Corner', 'Activity Hall Furniture'];
+const WORKS = ['Outdoor Play Area', 'Smart Room Setup', 'Lab Upgrade', 'Art and Craft Studio', 'Fitness Zone', 'Reading Corner', 'Activity Hall Furniture'];
 const PROJECT_TYPES: Project['projectType'][] = ['STAR', 'COMMON', 'ART_AND_CRAFTS', 'SYSTEMATICS'];
 const ENQUIRIES: Project['enquiryType'][] = ['OUTDOOR', 'INDOOR', 'FURNITURE', 'LAB_ART_WORK'];
 const OUTCOMES: NonNullable<Project['firstMeetingOutcome']>[] = ['POSITIVE', 'FIFTY_FIFTY', 'POSITIVE', 'NEGATIVE'];
-const PRODUCTS = ['Workhub Demo Swing Set', 'Workhub Demo Fitness Station', 'Workhub Demo Classroom Shelving', 'Workhub Demo Shade Structure', 'Workhub Demo Activity Table', 'Workhub Demo Climbing Frame'];
+const PRODUCTS = ['Workhub Demo Swing Set', 'Workhub Demo Fitness Station', 'Workhub Demo Storage Shelving', 'Workhub Demo Shade Structure', 'Workhub Demo Activity Table', 'Workhub Demo Climbing Frame'];
 
 /**
  * Starting data for the showcase: every role, login account and staff user,
@@ -105,9 +105,9 @@ export function createDemoSeed({ projects: plan = 'demo' }: { projects?: 'demo' 
     const project: Project = {
       id, school: `Workhub Demo Project ${number}`, projectName: work,
       contactPerson: `Demo Contact ${number}`, contactNumber: `+1 202-555-${String(100 + index).padStart(4, '0')}`,
-      place: `${district} Demo Campus`, district, zone: zoneAt(zone), region: zone === 0 ? 'North' : zone === 2 ? 'South' : (slot % 2 ? 'South' : 'North'),
+      place: `${district} Demo Site`, district, zone: zoneAt(zone), region: zone === 0 ? 'North' : zone === 2 ? 'South' : (slot % 2 ? 'South' : 'North'),
       parentCompany: PARENT_COMPANY_OPTIONS[index % PARENT_COMPANY_OPTIONS.length], brc: `Demo Cluster ${zone + 1}`,
-      executiveRemarks: dropped ? 'School postponed the project to the next academic year.' : `${work} discussed with the principal for Workhub Demo Project ${number}.`,
+      executiveRemarks: dropped ? 'Customer postponed the project to the next quarter.' : `${work} discussed with the customer for Workhub Demo Project ${number}.`,
       createdBy: executive.email, createdDate, currentStage, previousStage: step > 0 ? ORDER[step - 1] : dropped ? 'IN_REVIEW' : undefined,
       onboarded: onboarded && !dropped,
       currentOwnerRole: dropped || step < 4 ? 'ROLE_EXECUTIVE' : step <= 5 ? 'ROLE_SALES_COORDINATOR' : step === 6 ? 'ROLE_ACCOUNTS' : 'ROLE_INSTALLATION',
@@ -115,7 +115,7 @@ export function createDemoSeed({ projects: plan = 'demo' }: { projects?: 'demo' 
       stageChangeTimestamp: at(stageEntered), stageChangedBy: step >= 7 ? accounts.email : step === 6 ? sales.email : executive.email,
       projectType: PROJECT_TYPES[index % PROJECT_TYPES.length], projectCategory: ['A', 'B', 'C'][index % 3], enquiryType: ENQUIRIES[index % ENQUIRIES.length], needHelp: slot === 4 ? 'SALES_OFFICE' : 'NO_NEED',
       salesOffice: slot === 4, projectValue, invoiceAmount,
-      salesRemarks: onboarded ? 'Quotation finalised with the school committee.' : undefined,
+      salesRemarks: onboarded ? 'Quotation finalised with the customer.' : undefined,
       quotationRemarks: onboarded ? `Quotation WD-${number} shared and approved.` : undefined,
       installationTaskList: onboarded ? `Site survey; deliver ${work.toLowerCase()} items; assemble; safety check; handover.` : undefined,
       expectedDeliveryDate: !onboarded || currentStage === 'ONBOARDED' ? undefined : step < 7 ? dateOffset(10 + slot) : milestone(7),
@@ -128,7 +128,7 @@ export function createDemoSeed({ projects: plan = 'demo' }: { projects?: 'demo' 
       accountsUserEmail: accountsEntry ? accounts.email : undefined, accountsEntryDate: accountsEntry, accountsUpdatedTimestamp: lastPayment ? at(lastPayment.paymentDate) : undefined,
       accountsCompletedAt: installationEntry ? at(installationEntry) : undefined,
       installationStatus: currentStage === 'COMPLETED' ? 'WORK_DONE' : 'PENDING',
-      installationRemarks: currentStage === 'COMPLETED' ? 'Installed, inspected and handed over to the school.' : currentStage === 'INSTALLATION' ? 'Materials delivered; assembly scheduled.' : undefined,
+      installationRemarks: currentStage === 'COMPLETED' ? 'Installed, inspected and handed over to the customer.' : currentStage === 'INSTALLATION' ? 'Materials delivered; assembly scheduled.' : undefined,
       installationUserEmail: installationEntry ? installation.email : undefined, installationEntryDate: installationEntry,
       completionDate, installationCompletedAt: completionDate ? at(completionDate) : undefined,
       feedbackCollected: currentStage === 'COMPLETED' && zone === 0,
@@ -147,11 +147,11 @@ export function createDemoSeed({ projects: plan = 'demo' }: { projects?: 'demo' 
     if (completionDate) track(installation, 'INSTALLATION_COMPLETED', 'INSTALLATION', project, at(completionDate, '16:00:00'), 'PROJECT COMPLETED', `${project.school} installation completed.`);
     if (deletionPending) track(executive, 'EXECUTIVE_PROJECT_UPDATED', 'PROJECT', project, at(dateOffset(-1)), 'DELETION REQUESTED', `Deletion requested for ${project.school}.`);
 
-    // School visits for projects still with the executive.
+    // Site visits for projects still with the executive.
     if (step >= 0 && step <= 4) {
       const scheduledFor = dateOffset((slot % 4) - 1);
       const visited = scheduledFor < today() && slot % 2 === 0;
-      visits.push({ id: 13001 + visits.length, projectId: id, school: project.school, projectName: project.projectName, scheduledFor, assignedTo: executive.email, scheduledBy: executive.email, executiveRemark: `Visit ${project.school} to review the ${work.toLowerCase()}.`, status: visited ? 'VISITED' : 'SCHEDULED', visitNote: visited ? 'Met the principal and walked the site.' : undefined, outcomeRecordedAt: visited ? at(scheduledFor, '17:00:00') : undefined, outcomeRecordedBy: visited ? executive.email : undefined, createdAt: at(dateOffset(-3)) });
+      visits.push({ id: 13001 + visits.length, projectId: id, school: project.school, projectName: project.projectName, scheduledFor, assignedTo: executive.email, scheduledBy: executive.email, executiveRemark: `Visit ${project.school} to review the ${work.toLowerCase()}.`, status: visited ? 'VISITED' : 'SCHEDULED', visitNote: visited ? 'Met the customer and walked the site.' : undefined, outcomeRecordedAt: visited ? at(scheduledFor, '17:00:00') : undefined, outcomeRecordedBy: visited ? executive.email : undefined, createdAt: at(dateOffset(-3)) });
     }
   });
 

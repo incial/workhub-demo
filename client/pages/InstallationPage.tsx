@@ -511,7 +511,7 @@ export const InstallationPage: React.FC = () => {
                                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                                 <input
                                     type="text"
-                                    placeholder={activeTab === 'done' ? 'Search by school name...' : 'Search by school, contact person, or phone...'}
+                                    placeholder={activeTab === 'done' ? 'Search by customer name...' : 'Search by customer, contact person, or phone...'}
                                     value={searchInput}
                                     onChange={(e) => setSearchInput(e.target.value)}
                                     className="w-full pl-12 pr-14 py-3 bg-white/50 border-0 rounded-xl focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all text-sm font-medium placeholder:text-gray-400"
@@ -707,7 +707,7 @@ export const InstallationPage: React.FC = () => {
                                                         className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-emerald-700 hover:bg-emerald-100 transition-colors"
                                                     >
                                                         <MapPin size={12} />
-                                                        Open School Location
+                                                        Open Customer Location
                                                     </a>
                                                 )}
                                             </div>
@@ -986,15 +986,15 @@ const ProjectDetailsModal: React.FC<{
             maxWidthClassName="max-w-3xl"
         >
                 <div className="p-4 sm:p-6 lg:p-8 space-y-6">
-                    {/* School Information */}
+                    {/* Customer Information */}
                     <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border-2 border-blue-200">
                         <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
                             <Building2 size={20} className="text-blue-600" />
-                            School Information
+                            Customer Information
                         </h3>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">School Name</p>
+                                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Customer Name</p>
                                 <p className="text-base font-bold text-gray-900">{project.school}</p>
                             </div>
                             <div>

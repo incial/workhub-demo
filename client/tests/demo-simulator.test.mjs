@@ -22,7 +22,7 @@ const request = async (url, method = 'get', data, extra = {}) => {
 const get = async url => (await request(url)).data.data;
 const mutate = async (url, data, method = 'post') => (await request(url, method, data)).data.data;
 // The shipped app starts with no projects; workflow tests run against the fictional sample pipeline.
-const DATA_KEY = 'workhub-demo.data.v7';
+const DATA_KEY = 'workhub-demo.data.v8';
 test.beforeEach(() => {
   values.clear();
   values.set('workhub-demo.session.v2', JSON.stringify({ version: 2, actorId: 9001, email: 'incial@demo.in' }));
@@ -123,7 +123,7 @@ test('production catalog and monthly saves persist into history, trends and anal
   assert.ok((await get(`/production/history?from=${year}-01-01&to=${year}-12-31`)).some(e => e.productId === product.id && e.quantity === 17));
   assert.ok((await get(`/production/trends?year=${year}`)).find(e => e.month === month).totalQuantity >= 17);
   assert.ok((await get('/analytics/dashboard')).productionSummary.currentMonthQuantity >= 17);
-  assert.ok(values.has('workhub-demo.data.v7'));
+  assert.ok(values.has('workhub-demo.data.v8'));
 });
 
 test('the adapter rejects missing markers, unknown endpoints and cancellation before writes', async () => {
@@ -139,11 +139,11 @@ test('the adapter rejects missing markers, unknown endpoints and cancellation be
 });
 
 test('unsafe persisted state resets to seeded data and payload credentials never enter storage', async () => {
-  values.set('workhub-demo.data.v7', JSON.stringify({ version: 1, projects: [{ id: 3, school: 'PRIVATE RECORD' }] }));
+  values.set('workhub-demo.data.v8', JSON.stringify({ version: 1, projects: [{ id: 3, school: 'PRIVATE RECORD' }] }));
   assert.equal(JSON.stringify(await get('/projects/all')).includes('PRIVATE RECORD'), false);
   const user = (await request('/users/create', 'post', { name: 'Fictional Tester', email: 'tester@staff.example', role: 'ROLE_EXECUTIVE', zone: 'ZONE_1', password: 'DO-NOT-PERSIST' })).data;
   assert.equal(user.password, undefined);
-  assert.equal(values.get('workhub-demo.data.v7').includes('DO-NOT-PERSIST'), false);
+  assert.equal(values.get('workhub-demo.data.v8').includes('DO-NOT-PERSIST'), false);
   const actor = (await request('/users/update/9001', 'put', { role: 'ROLE_SUPER_ADMIN', email: 'changed@staff.example', googleId: 'SECRET' })).data;
   assert.equal(actor.role, 'ROLE_DEMO');
   assert.equal(actor.email, 'incial@demo.in');
@@ -179,10 +179,10 @@ test('demo profile, password and policy actions are local, persistent and creden
   await assert.rejects(request('/auth/password/change/confirm', 'post', { otp: '123456', newPassword: 'new-demo-password' }), e => e.response?.status === 400);
   const challenge = (await request('/auth/password/change/request', 'post', { currentPassword: 'incial', newPassword: 'new-demo-password', confirmPassword: 'new-demo-password' })).data;
   assert.match(challenge.message, /123456/);
-  assert.equal(values.get('workhub-demo.data.v7').includes('new-demo-password'), false);
+  assert.equal(values.get('workhub-demo.data.v8').includes('new-demo-password'), false);
   await assert.rejects(request('/auth/password/change/confirm', 'post', { otp: '000000', newPassword: 'new-demo-password' }), e => e.response?.status === 400);
   await request('/auth/password/change/confirm', 'post', { otp: '123456', newPassword: 'new-demo-password' });
-  assert.equal(values.get('workhub-demo.data.v7').includes('new-demo-password'), false);
+  assert.equal(values.get('workhub-demo.data.v8').includes('new-demo-password'), false);
 });
 
 test('pagination, zones, executive ownership and search follow existing API contracts', async () => {
@@ -240,7 +240,7 @@ test('each role account signs in as its own seeded user', async () => {
   await assert.rejects(request('/auth/me'), /session/i);
 });
 
-test('the executive account sees and changes only its own schools', async () => {
+test('the executive account sees and changes only its own projects', async () => {
   signInAs(9103, 'executive@demo.in');
   const own = await get('/projects/executive');
   assert.ok(own.length >= 5);
@@ -248,8 +248,8 @@ test('the executive account sees and changes only its own schools', async () => 
   signInAs(9001, 'incial@demo.in');
   const other = (await get('/projects/all')).find(project => project.createdBy !== 'executive@demo.in');
   signInAs(9103, 'executive@demo.in');
-  await assert.rejects(request(`/projects/${other.id}`), /own schools/);
-  await assert.rejects(request(`/projects/${other.id}`, 'put', { school: 'Hijacked' }), /own schools/);
+  await assert.rejects(request(`/projects/${other.id}`), /own projects/);
+  await assert.rejects(request(`/projects/${other.id}`, 'put', { school: 'Hijacked' }), /own projects/);
   const created = await mutate('/projects/create', { school: 'Executive Demo School', zone: 'ZONE_3' });
   assert.equal(created.createdBy, 'executive@demo.in');
   assert.equal(created.zone, 'ZONE_1');

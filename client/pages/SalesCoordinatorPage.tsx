@@ -44,12 +44,12 @@ const formatExecutiveSheetValue = (value?: string) =>
 const buildSalesProjectCsvRow = (project: Project) => {
     return {
         'Project ID': project.id,
-        'School / Institution': project.school,
+        'Customer': project.school,
         'Project Name': project.projectName || '',
         'Parent Company': project.parentCompany || '',
         'Contact Person': project.contactPerson || '',
         'Contact Number': project.contactNumber || '',
-        'BRC': project.brc || '',
+        'Cluster': project.brc || '',
         'Category': formatExecutiveSheetValue(project.projectCategory),
         'Project': formatExecutiveSheetValue(project.projectType),
         'Enquiry': formatExecutiveSheetValue(project.enquiryType),
@@ -456,7 +456,7 @@ export const SalesCoordinatorPage: React.FC = () => {
                             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                             <input
                                 type="text"
-                                placeholder={activeTab === 'done' ? 'Search by school name...' : 'Search by school, contact person, or phone...'}
+                                placeholder={activeTab === 'done' ? 'Search by customer name...' : 'Search by customer, contact person, or phone...'}
                                 value={searchInput}
                                 onChange={(e) => setSearchInput(e.target.value)}
                                 className="w-full pl-12 pr-14 py-3 bg-white/50 border-0 rounded-xl focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all text-sm font-medium placeholder:text-gray-400"
@@ -963,7 +963,7 @@ const ProjectDetailsModal: React.FC<{
                         </h3>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                             <div className="rounded-xl border border-slate-200/70 bg-white p-4">
-                                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">School Name</p>
+                                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Customer Name</p>
                                 <p className="font-bold text-gray-900 text-lg">{project.school}</p>
                             </div>
                             {project.projectName && (

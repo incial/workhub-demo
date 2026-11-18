@@ -27,7 +27,7 @@ export const DEMO_ACCOUNTS: readonly DemoAccount[] = [
   { id: DEMO_ACTOR_ID, email: DEMO_EMAIL, name: 'Demo User', role: 'ROLE_DEMO', label: 'All access', description: 'Admin workspace with Admin / Super Admin view switcher' },
   { id: 9100, email: 'superadmin@demo.in', name: 'Demo Super Admin', role: 'ROLE_SUPER_ADMIN', label: 'Super Admin', description: 'Analytics, reports, tracking and audit logs' },
   { id: 9101, email: 'admin@demo.in', name: 'Demo Admin', role: 'ROLE_ADMIN', label: 'Admin', description: 'Every operational workspace across zones' },
-  { id: 9103, email: 'executive@demo.in', name: 'Demo Executive', role: 'ROLE_EXECUTIVE', zone: 'ZONE_1', label: 'Executive', description: 'Own school leads, visits and stage moves' },
+  { id: 9103, email: 'executive@demo.in', name: 'Demo Executive', role: 'ROLE_EXECUTIVE', zone: 'ZONE_1', label: 'Executive', description: 'Own leads, visits and stage moves' },
   { id: 9104, email: 'billing@demo.in', name: 'Demo Billing Coordinator', role: 'ROLE_SALES_COORDINATOR', label: 'Billing', description: 'Quotations, invoices and delivery dates' },
   { id: 9105, email: 'accounts@demo.in', name: 'Demo Accounts', role: 'ROLE_ACCOUNTS', label: 'Accounts', description: 'Record payments against invoices' },
   { id: 9107, email: 'procurement@demo.in', name: 'Demo Procurement', role: 'ROLE_PRODUCTION', label: 'Procurement', description: 'Product catalogue and monthly quantities' },

@@ -1,5 +1,5 @@
 export const PARENT_COMPANY_OPTIONS = [
-  'Workhub Demo School Aid',
+  'Workhub Demo Partners',
   'V N S',
   'V T Publication',
   'Glory Trade Links',

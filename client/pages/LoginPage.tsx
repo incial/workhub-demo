@@ -12,7 +12,7 @@ const ACCOUNT_ICONS: Record<string, LucideIcon> = {
 };
 
 const WORKFLOW = [
-    { icon: Target, title: 'Leads & visits', text: 'Executives capture schools, schedule visits and record outcomes.' },
+    { icon: Target, title: 'Leads & visits', text: 'Executives capture leads, schedule visits and record outcomes.' },
     { icon: Briefcase, title: 'Billing', text: 'Coordinators prepare quotations, invoices and delivery dates.' },
     { icon: Wallet, title: 'Accounts', text: 'Payments are recorded against invoices with full history.' },
     { icon: Wrench, title: 'Installation', text: 'Installation teams track task lists through to completion.' },
@@ -71,9 +71,9 @@ export const LoginPage: React.FC = () => {
                 </div>
 
                 <div className="relative z-10 my-10">
-                    <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-brand-300">Education infrastructure CRM</p>
+                    <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-brand-300">Project workflow CRM</p>
                     <h1 className="mt-3 text-[34px] font-semibold leading-[1.25] text-white">
-                        One workspace from first<br />school visit to final feedback.
+                        One workspace from first<br />site visit to final feedback.
                     </h1>
                     <ol className="mt-10 space-y-5">
                         {WORKFLOW.map(({ icon: Icon, title, text }, index) => (

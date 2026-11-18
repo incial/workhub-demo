@@ -140,7 +140,7 @@ const downloadCsv = (fileName: string, headers: string[], rows: Array<Array<stri
 
 const toDateLabel = (date?: string) => date ? new Date(date).toLocaleDateString('en-GB') : '-';
 const ADDITIONAL_PROJECT_DATA_CSV_HEADERS = [
-    'BRC',
+    'Cluster',
     'Category',
     'Project Type',
     'Enquiry',
@@ -154,7 +154,7 @@ const ADDITIONAL_PROJECT_DATA_CSV_HEADERS = [
 const PROJECT_TRACKING_CSV_HEADERS = [
     'No.',
     'Project ID',
-    'School Name',
+    'Customer Name',
     'Project Name',
     'User',
     ...ADDITIONAL_PROJECT_DATA_CSV_HEADERS,
@@ -1218,7 +1218,7 @@ export const ProjectTrackingPage: React.FC = () => {
         const merged = new Map<string, number>();
         userActionIndicators.forEach((entry) => merged.set(entry.action, entry.count));
         merged.set('EXECUTIVE_PROJECTS_ONBOARDED', executiveProjectsOnboardedCount);
-        merged.set('SCHOOLS_VISITED', executiveSchoolsVisitedCount);
+        merged.set('SITES_VISITED', executiveSchoolsVisitedCount);
         return Array.from(merged.entries())
             .map(([action, count]) => ({ action, count }))
             .filter((entry) => entry.count > 0)
@@ -1306,7 +1306,7 @@ export const ProjectTrackingPage: React.FC = () => {
         const visitedCount = visits.filter((visit) => visit.status === 'VISITED').length;
         const notVisitedCount = visits.filter((visit) => visit.status === 'NOT_VISITED').length;
         const scheduledCount = visits.filter((visit) => visit.status === 'SCHEDULED').length;
-        const headers = ['', '', 'Executive Creation & School Visit Activity Report'];
+        const headers = ['', '', 'Executive Creation & Site Visit Activity Report'];
         const metadataRows = [
             [],
             [`Executive Name: ${selectedUserDisplay.name || 'N/A'}`],
@@ -1316,13 +1316,13 @@ export const ProjectTrackingPage: React.FC = () => {
             [`From Date: ${rangeFrom}`],
             [`To Date: ${rangeTo}`],
             [`Total Projects Created: ${projects.length}`],
-            [`Total School Visits: ${visits.length}`],
+            [`Total Site Visits: ${visits.length}`],
             [`Visited: ${visitedCount}`],
             [`Not Visited: ${notVisitedCount}`],
             [`Still Scheduled: ${scheduledCount}`],
             [],
             ['PROJECT CREATION DETAILS'],
-            ['No.', 'Created At', 'Project Name', 'School Name', 'Place', 'District', 'Region', 'Contact Person', 'Contact Number', 'Current Stage', 'Zone', 'Onboarded', 'Executive Remark', 'Feedback']
+            ['No.', 'Created At', 'Project Name', 'Customer Name', 'Place', 'District', 'Region', 'Contact Person', 'Contact Number', 'Current Stage', 'Zone', 'Onboarded', 'Executive Remark', 'Feedback']
         ];
         const projectRows = projects.map((project, idx) => [
             idx + 1,
@@ -1360,8 +1360,8 @@ export const ProjectTrackingPage: React.FC = () => {
                 ...metadataRows,
                 ...projectRows,
                 [],
-                ['SCHOOL VISIT DETAILS'],
-                ['No.', 'Scheduled For', 'School Name', 'Project Name', 'Visit Status', 'Assigned To', 'Scheduled By', 'Executive Remark', 'Visit Note', 'Not Visited Reason', 'Outcome Recorded At', 'Outcome Recorded By'],
+                ['SITE VISIT DETAILS'],
+                ['No.', 'Scheduled For', 'Customer Name', 'Project Name', 'Visit Status', 'Assigned To', 'Scheduled By', 'Executive Remark', 'Visit Note', 'Not Visited Reason', 'Outcome Recorded At', 'Outcome Recorded By'],
                 ...visitRows
             ]
         };
@@ -1663,7 +1663,7 @@ export const ProjectTrackingPage: React.FC = () => {
                                                 autoFocus
                                                 value={projectTrackingSearchInput}
                                                 onChange={(event) => setProjectTrackingSearchInput(event.target.value)}
-                                                placeholder="Search by school name"
+                                                placeholder="Search by customer name"
                                                 className="w-full rounded-xl border border-blue-100 bg-white py-2.5 pl-10 pr-3 text-sm font-medium text-slate-800 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100"
                                             />
                                         </div>
@@ -1673,7 +1673,7 @@ export const ProjectTrackingPage: React.FC = () => {
                                                 Search
                                             </button>
                                             {(projectTrackingSearchInput || projectTrackingSearchTerm) && (
-                                                <button type="button" onClick={clearProjectTrackingSearch} className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-slate-600 transition hover:bg-slate-50" title="Clear school search">
+                                                <button type="button" onClick={clearProjectTrackingSearch} className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-slate-600 transition hover:bg-slate-50" title="Clear customer search">
                                                     <X size={16} />
                                                 </button>
                                             )}
@@ -1724,14 +1724,14 @@ export const ProjectTrackingPage: React.FC = () => {
                                 {(projectTrackingSearchTerm || projectTrackingHasDateRange) && (
                                     <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-slate-600">
                                         <span>Active filters:</span>
-                                        {projectTrackingSearchTerm && <span className="rounded-full bg-blue-50 px-3 py-1 text-blue-700">School: {projectTrackingSearchTerm}</span>}
+                                        {projectTrackingSearchTerm && <span className="rounded-full bg-blue-50 px-3 py-1 text-blue-700">Customer: {projectTrackingSearchTerm}</span>}
                                         {projectTrackingHasDateRange && <span className="rounded-full bg-violet-50 px-3 py-1 text-violet-700">Created: {toDateLabel(projectTrackingFromDate)} – {toDateLabel(projectTrackingToDate)}</span>}
                                     </div>
                                 )}
                             </div>
                         }
                     >
-                        <SimpleTable tableClassName="min-w-[1800px]" headers={['No.', 'School', 'Project', 'User', 'BRC', 'Category', 'Project Type', 'Enquiry', 'Last Contact', 'Last Visit', 'Next Follow-up', 'Need Help', 'Sales Office', 'Sales Office Remark', 'Project Value', 'Invoice Amount', 'Pending', 'Payment Status', 'Stage', 'Zone']}>
+                        <SimpleTable tableClassName="min-w-[1800px]" headers={['No.', 'Customer', 'Project', 'User', 'Cluster', 'Category', 'Project Type', 'Enquiry', 'Last Contact', 'Last Visit', 'Next Follow-up', 'Need Help', 'Sales Office', 'Sales Office Remark', 'Project Value', 'Invoice Amount', 'Pending', 'Payment Status', 'Stage', 'Zone']}>
                             {loading && (
                                 <tr>
                                     <td className="px-3 py-6 text-center text-gray-500" colSpan={20}>Loading project tracking...</td>
@@ -2065,7 +2065,7 @@ export const ProjectTrackingPage: React.FC = () => {
                                                                         <thead>
                                                                             <tr className="text-left text-gray-600 bg-gray-50">
                                                                                 <th className="px-2 py-1.5 font-semibold">No.</th>
-                                                                                <th className="px-2 py-1.5 font-semibold">School</th>
+                                                                                <th className="px-2 py-1.5 font-semibold">Customer</th>
                                                                                 <th className="px-2 py-1.5 font-semibold">Project</th>
                                                                                 <th className="px-2 py-1.5 font-semibold">Stage</th>
                                                                                 {card.key === 'ONBOARDED' ? (
@@ -2124,7 +2124,7 @@ export const ProjectTrackingPage: React.FC = () => {
                                                 <div>
                                                     <h2 className="text-lg font-bold text-gray-900">Executive Creation & Visit Activity</h2>
                                                     <p className="text-sm font-medium text-slate-600">
-                                                        Review project creations alongside scheduled, completed, and missed school visits for this executive.
+                                                        Review project creations alongside scheduled, completed, and missed site visits for this executive.
                                                     </p>
                                                 </div>
                                                 <div className="inline-flex items-center justify-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700">
@@ -2324,7 +2324,7 @@ export const ProjectTrackingPage: React.FC = () => {
                                                                 <p className="mt-1 text-2xl font-black text-emerald-700">{executiveProjectsForSelectedDate.length}</p>
                                                             </div>
                                                             <div className="w-full sm:w-auto flex-shrink-0 rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-center">
-                                                                <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-blue-700">School Visits</p>
+                                                                <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-blue-700">Site Visits</p>
                                                                 <p className="mt-1 text-2xl font-black text-blue-700">{executiveVisitsForSelectedDate.length}</p>
                                                             </div>
                                                         </div>
@@ -2340,7 +2340,7 @@ export const ProjectTrackingPage: React.FC = () => {
                                                                     <div className="min-w-0">
                                                                         <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Project Name</p>
                                                                         <p className="mt-1 truncate text-sm font-bold text-slate-900">{project.name || 'N/A'}</p>
-                                                                        <p className="mt-3 text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">School Name</p>
+                                                                        <p className="mt-3 text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Customer Name</p>
                                                                         <p className="mt-1 truncate text-sm font-semibold text-slate-700">{project.school || 'N/A'}</p>
                                                                     </div>
                                                                 </div>
@@ -2363,7 +2363,7 @@ export const ProjectTrackingPage: React.FC = () => {
                                                                                 <p className="text-sm font-bold text-slate-900">{visit.school}</p>
                                                                                 <span className={`rounded-full border px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.12em] ${visitStatus.className}`}>{visitStatus.label}</span>
                                                                             </div>
-                                                                            <p className="mt-1 text-xs font-medium text-slate-600">{visit.projectName || 'School visit'}</p>
+                                                                            <p className="mt-1 text-xs font-medium text-slate-600">{visit.projectName || 'Site visit'}</p>
                                                                             {visit.executiveRemark && (
                                                                                 <div className="mt-2 rounded-lg border border-violet-100 bg-violet-50 px-2.5 py-2 text-xs text-violet-900">
                                                                                     <span className="font-black uppercase tracking-[0.12em] text-violet-700">Executive remark</span>
@@ -2521,7 +2521,7 @@ const ExecutivePipelineListModal: React.FC<{
                     <thead>
                         <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-black uppercase tracking-[0.12em] text-slate-500">
                             <th className="px-3 py-3">No.</th>
-                            <th className="px-3 py-3">School</th>
+                            <th className="px-3 py-3">Customer</th>
                             <th className="px-3 py-3">Project</th>
                             <th className="px-3 py-3">Stage</th>
                             <th className="px-3 py-3">{card.key === 'ONBOARDED' ? 'Onboarded Date' : 'Next Follow-up'}</th>

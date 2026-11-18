@@ -28,11 +28,11 @@ const escapeCsv = escapeCsvCell;
 
 const downloadCsv = (from: string, to: string, report: ExecutiveActivityReport) => {
     const rows = [
-        ...report.schoolVisits.map((row) => ['School Visit', row.activityDate, row.executiveName, row.school, row.projectWork || '']),
+        ...report.schoolVisits.map((row) => ['Site Visit', row.activityDate, row.executiveName, row.school, row.projectWork || '']),
         ...report.projectsCreated.map((row) => ['Project Created', row.activityDate, row.executiveName, row.school, row.projectWork || ''])
     ];
     const csv = [
-        ['Activity', 'Date', 'Executive', 'School', 'Project Work'].map(escapeCsv).join(','),
+        ['Activity', 'Date', 'Executive', 'Customer', 'Project Work'].map(escapeCsv).join(','),
         ...rows.map((row) => row.map(escapeCsv).join(','))
     ].join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -63,7 +63,7 @@ const ActivityTable: React.FC<ActivityTableProps> = ({ rows, emptyMessage }) => 
                     <tr>
                         <th className="px-5 py-3">Date</th>
                         <th className="px-5 py-3">Executive</th>
-                        <th className="px-5 py-3">School</th>
+                        <th className="px-5 py-3">Customer</th>
                         <th className="px-5 py-3">Project Work</th>
                     </tr>
                 </thead>
@@ -168,7 +168,7 @@ export const ExecutiveActivityReportPage: React.FC = () => {
                             </button>
                             <p className="text-xs font-black uppercase tracking-[0.22em] text-indigo-600">Executive workspace</p>
                             <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-900 lg:text-4xl">Today&apos;s Report</h1>
-                            <p className="mt-2 max-w-2xl text-sm font-medium text-slate-600">Review executive school visits and newly created projects for any selected calendar date range.</p>
+                            <p className="mt-2 max-w-2xl text-sm font-medium text-slate-600">Review executive site visits and newly created projects for any selected calendar date range.</p>
                         </div>
                         <button
                             type="button"
@@ -231,7 +231,7 @@ export const ExecutiveActivityReportPage: React.FC = () => {
                             <p className="mt-2 text-3xl font-black text-indigo-950">{loading ? '—' : totalActivities}</p>
                         </div>
                         <div className="rounded-2xl border border-emerald-100 bg-emerald-50/80 p-5">
-                            <p className="text-xs font-black uppercase tracking-[0.14em] text-emerald-700">Schools visited</p>
+                            <p className="text-xs font-black uppercase tracking-[0.14em] text-emerald-700">Sites visited</p>
                             <p className="mt-2 text-3xl font-black text-emerald-950">{loading ? '—' : report?.schoolVisits.length || 0}</p>
                         </div>
                         <div className="rounded-2xl border border-violet-100 bg-violet-50/80 p-5">
@@ -245,11 +245,11 @@ export const ExecutiveActivityReportPage: React.FC = () => {
                             <div className="flex items-center gap-3 border-b border-slate-100 px-5 py-5 sm:px-6">
                                 <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700"><ClipboardCheck size={20} /></span>
                                 <div>
-                                    <h2 className="font-black text-slate-900">Executives who visited schools</h2>
-                                    <p className="mt-0.5 text-sm font-medium text-slate-500">Completed school visits in the selected dates.</p>
+                                    <h2 className="font-black text-slate-900">Executives who made site visits</h2>
+                                    <p className="mt-0.5 text-sm font-medium text-slate-500">Completed site visits in the selected dates.</p>
                                 </div>
                             </div>
-                            {loading ? <p className="px-5 py-9 text-center text-sm font-semibold text-slate-500">Loading school visits…</p> : <ActivityTable rows={report?.schoolVisits || []} emptyMessage={hasLoaded ? 'No completed school visits were recorded for these dates.' : 'Loading…'} />}
+                            {loading ? <p className="px-5 py-9 text-center text-sm font-semibold text-slate-500">Loading site visits…</p> : <ActivityTable rows={report?.schoolVisits || []} emptyMessage={hasLoaded ? 'No completed site visits were recorded for these dates.' : 'Loading…'} />}
                         </section>
 
                         <section className="overflow-hidden rounded-3xl border border-white/70 bg-white/90 shadow-premium">

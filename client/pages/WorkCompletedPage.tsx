@@ -198,7 +198,7 @@ const buildProjectJourneyCsvRows = (project: Project): unknown[][] => {
 
     const detailRows = [
         ['Project Snapshot', 'Project ID', project.id, '', ''],
-        ['Project Snapshot', 'School', project.school, '', ''],
+        ['Project Snapshot', 'Customer', project.school, '', ''],
         ['Project Snapshot', 'Project Name', project.projectName || 'Not provided', '', ''],
         ['Project Snapshot', 'Contact Person', project.contactPerson || 'Not provided', '', ''],
         ['Project Snapshot', 'Contact Number', project.contactNumber || 'Not provided', '', ''],
@@ -209,7 +209,7 @@ const buildProjectJourneyCsvRows = (project: Project): unknown[][] => {
         ['Project Snapshot', 'Created By', project.createdBy || 'Not provided', '', ''],
         ['Project Snapshot', 'Current Stage', formatStageLabel(project.currentStage), '', ''],
         ['Project Snapshot', 'Installation Classification', project.projectClassification || 'Not recorded', '', ''],
-        ['Executive Add Data', 'BRC', project.brc || 'Not recorded', '', ''],
+        ['Executive Add Data', 'Cluster', project.brc || 'Not recorded', '', ''],
         ['Executive Add Data', 'Category', formatStageLabel(project.projectCategory), '', ''],
         ['Executive Add Data', 'Project Type', formatStageLabel(project.projectType), '', ''],
         ['Executive Add Data', 'Enquiry', formatStageLabel(project.enquiryType), '', ''],
@@ -273,7 +273,7 @@ const buildCompletedArchiveCsvRows = (projects: Project[], months: number): unkn
         [],
         [
             'Project ID',
-            'School',
+            'Customer',
             'Project Name',
             'Zone',
             'Parent Companies',
@@ -780,7 +780,7 @@ export const WorkCompletedPage: React.FC = () => {
                                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                                 <input
                                     type="text"
-                                    placeholder="Search by school, contact person, or phone..."
+                                    placeholder="Search by customer, contact person, or phone..."
                                     value={searchTerm}
                                     onChange={(e) => {
                                         const value = e.target.value;
@@ -1226,7 +1226,7 @@ const ProjectHistoryModal: React.FC<{
                                     className="px-3 py-2 bg-brand-50 border border-brand-200 text-brand-700 rounded-lg hover:bg-brand-100 transition-all text-sm font-semibold inline-flex items-center gap-2"
                                 >
                                     <ExternalLink size={14} />
-                                    Open School Location
+                                    Open Customer Location
                                 </a>
                             )}
                             <button onClick={onClose} className="text-gray-500 hover:text-gray-700 text-2xl font-bold">×</button>
@@ -1253,7 +1253,7 @@ const ProjectHistoryModal: React.FC<{
                             <div><span className="font-semibold">Payment Status:</span> {project.paymentStatus || 'N/A'}</div>
                             <div><span className="font-semibold">Installation Status:</span> {project.installationStatus || 'N/A'}</div>
                             <div><span className="font-semibold">Expected Delivery:</span> {formatDateDDMMYYYY(project.expectedDeliveryDate)}</div>
-                            <div className="col-span-2"><span className="font-semibold">School Location Link:</span> {project.schoolLocationLink || 'N/A'}</div>
+                            <div className="col-span-2"><span className="font-semibold">Customer Location Link:</span> {project.schoolLocationLink || 'N/A'}</div>
                         </div>
                     </div>
 
@@ -1589,7 +1589,7 @@ const PremiumProjectHistoryModal: React.FC<{
     ].filter((item) => item.value);
 
     const executiveAdditionalData = [
-        { label: 'BRC', value: project.brc || 'Not recorded' },
+        { label: 'Cluster', value: project.brc || 'Not recorded' },
         { label: 'Category', value: formatStageLabel(project.projectCategory) },
         { label: 'Project Type', value: formatStageLabel(project.projectType) },
         { label: 'Enquiry', value: formatStageLabel(project.enquiryType) },
@@ -1711,7 +1711,7 @@ const PremiumProjectHistoryModal: React.FC<{
                                     className="px-4 py-2.5 bg-brand-50 border border-brand-200 text-brand-700 rounded-xl hover:bg-brand-100 transition-all text-sm font-semibold inline-flex items-center justify-center gap-2"
                                 >
                                     <ExternalLink size={14} />
-                                    Open School Location
+                                    Open Customer Location
                                 </a>
                             )}
                             <button onClick={onClose} className="px-4 py-2.5 border border-slate-200 bg-white text-slate-700 rounded-xl hover:bg-slate-50 transition-all text-sm font-semibold">
@@ -1851,7 +1851,7 @@ const PremiumProjectHistoryModal: React.FC<{
                                 </div>
                                 <div>
                                     <h3 className="text-lg font-black text-slate-900">Executive Add Data</h3>
-                                    <p className="mt-1 text-sm text-slate-600">School details entered by the executive, together with values synchronized from the project workflow.</p>
+                                    <p className="mt-1 text-sm text-slate-600">Customer details entered by the executive, together with values synchronized from the project workflow.</p>
                                 </div>
                             </div>
                             <span className="inline-flex w-fit items-center rounded-full border border-violet-200 bg-white/80 px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.16em] text-violet-700">
